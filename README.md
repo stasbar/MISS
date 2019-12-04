@@ -3,7 +3,7 @@ How to prevent infection caused by stolen private key.
 
 
 ```uml
-Author->Author: Create and publicly publish file
+Author->Author: Create and publish file
 Author->Author: Calculate **hash**
 Author->Smart Contract: token request(**hash**)
 Smart Contract->Smart Contract: Check if **hash** already exists and when was last time spreaded
@@ -46,6 +46,5 @@ Author->Smart Contract: token request(hash)
 
 Smart Contract-->User: true
 note User: User can trust this file with (N/N * 100%) certainty
-
 ```
-https://swimlanes.io/#rVTBjtMwED3jr5gLog3asssx0q5UutpjkdgFDgghJ5kopq4d7AnZCPHvjJ2kDW1399Koair3zfO8N89eNlRZd3GzjO8UVg4lIUhTQN1kWuW663/4CkqlUSwPC6TOGx1qkqSSvkqSHeR+Kx3ByhpyMqcUyG7QgMNfDXqajfC5+B93XLeqMN+AKnc7gNTcZtEBPipPPnbbVszdSg9aegJSWwRfBxQWQpUphMoRnzUEyoOxxEzatlhwbwMcOiTx6qClvdxP+BNzmjHSWzMXyDsf9n9CwM6j3oJMet7SGhaUacvaRlnMliTB5mHlZep7sg7BYMuFkZxpXq7Cx1o5Scqab6On3+Ht9WR9Zo7mMjWBGmf2O4rdyO8+pPBQsbf82XaxrygnSbQym0FihdwyA/b1nz0Oxbe2NdryGGLY+vXwPTUxNDz8dSjsCzpVdhMvfkutCkUdlNaNrZz29rnYjWxDfo64oqyTpt7A+uPXGMB+9IVFb95QzwTMw8C+knN6HLteeim1RwEhsAj90gO6rTLsxiIuQC5NzDO5JsQ/jCA6yAE9nmNPwVAUE8odzwEHtIoqmF29W0MCV5eXr+eQoyOpDHWCn8VikcKfUvoLXytj0P2FW9SSp1CEFycpgQoyLMekDgeN6Wvrvco0hgj9SNnOO2e3rKOFNmyrNWhra26FD3O4NkyOfhq352+YMIN5397kWvPxxETkmZx5f9qZM/lyLq3iTGrXT+WAHwDxDw==
+https://swimlanes.io/#rVTBjtMwED3jr5gLog3asssx0q5UutpjkdgFDgghJ5kopq4d7AnZCPHvjJ2kDW1399IoaiT3zfO8N89eNlRZd3GzjN8UVg4lIUhTQN1kWvkKSqVRLA9xUueNDtAkqaSvkmQHud9KR7CyhpzMKQWyGzTg8FeDnmYjfC7+xx3XrSrMN6DK3Q4gNXdXdICPypOPTbYVc7fSg5aegNQWwdcBhYVQZQqhcsRnDYHyYCwxk7YtFtzbAIcOSbw6aGkv9xP+xJxmjPTWzAXyzof9nxCw86i3IJOet7SGBWXasrZRFrMlSbB5WHmZ+p6sQzDYcmEkZ5qXq/CxVk6Ssubb6Ol3eHs9WZ+Zo7lMTaDGmf2OYjfyuw8pPFTsLb/bLvYV5SSJVmYzSKyQW2bAvv6zx6H41rZGWx5DDFu/Hn6nJoaGh78OhX1Bp8pu4sVvqVWhqIPSurGV094+F7uRbcjPEVeUddLUG1h//BoD2I++sOjNG+qZgHkY2FdyTo9j10svpfYoIAQWoV96QLdVht1YxAXIpYl5JteE+IcRRAc5oMdz7CkYimJCueM54IBWUQWzq3drSODq8vL1HHJ0JJWhTvCzWCxS+FNKf+FrZQy6v3CLWvIUivDhJCVQQYblmNThoDF9bb1XmcYQoR8p23nn7JZ1tNCGbbUGbW3NrfBhDteGydFP4/b8DRNmMO/bm9xmPp6YiDyTM+9PO3MmX86lVZxJ7fqpHPADIP4B
