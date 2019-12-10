@@ -78,7 +78,7 @@ async function main() {
     const suspicion = randomSuspicion();
     const availableNodes = data.nodes.getIds();
 
-    if (i === steps.length + 2) {
+    if (i === steps.length + 1) {
       fakeNewsDetected();
     }
 

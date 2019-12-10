@@ -1,6 +1,6 @@
 import vis from "vis-timeline";
 import data from "./data";
-var DELAY = 1000; // delay in ms to add new data points
+var DELAY = 500; // delay in ms to add new data points
 
 // create a graph2d with an (currently empty) dataset
 var container = document.getElementById("visualization");
