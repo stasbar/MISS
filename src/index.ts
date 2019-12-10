@@ -96,8 +96,6 @@ async function main() {
         : undefined;
     });
 
-    console.log(edges);
-
     // Could not spread
     if (edges.filter(edge => edge !== undefined).length < suspicion) {
       continue;
@@ -132,5 +130,9 @@ async function rollBack() {
   data.nodes.remove({ id: 4 });
 }
 
+// TODO plot diagram of minSuspition/fakeNewsDetection
+// TODO try with non linear delays
+// TODO add perplot detection
+// TODO add curable nodes (remove them after some delay)
 main();
 
