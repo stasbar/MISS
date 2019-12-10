@@ -8,10 +8,12 @@
     "build": "parcel build index.html"
   },
   "dependencies": {
-    "vis-network": "6.4.6"
+    "vis-network": "6.4.6",
+    "vis-timeline": "6.2.10"
   },
   "devDependencies": {
-    "parcel-bundler": "^1.6.1"
+    "parcel-bundler": "^1.6.1",
+    "typescript": "^3.7.3"
   },
   "keywords": []
 }

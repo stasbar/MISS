@@ -1,15 +1,12 @@
 import vis from "vis-network";
+import data from "./data";
+import "./plot";
 
 async function delay(msec) {
   return new Promise(resolve => setTimeout(resolve, msec * 1000));
 }
 
 // create a network
-var container = document.getElementById("app");
-var data = {
-  nodes: new vis.DataSet([]),
-  edges: new vis.DataSet([])
-};
 var options = {
   nodes: {
     shape: "dot",
@@ -29,7 +26,8 @@ var options = {
   }
 };
 
-new vis.Network(container, data, options);
+const networkContainer = document.getElementById("network");
+new vis.Network(networkContainer, data, options);
 
 const minSuspicion = 3;
 const maxSuspicion = 5;
@@ -73,14 +71,14 @@ async function main() {
     data.nodes.add(node);
     data.edges.add(edge);
 
-    await delay(0.1);
+    await delay(3);
   }
 
   for (let i: number = steps.length; i < steps.length + 15; i++) {
     const suspicion = randomSuspicion();
     const availableNodes = data.nodes.getIds();
 
-    if (i === steps.length + 1) {
+    if (i === steps.length + 2) {
       fakeNewsDetected();
     }
 
