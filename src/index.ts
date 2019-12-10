@@ -23,12 +23,15 @@ var options = {
   edges: {
     width: 2,
     arrows: "to"
+  },
+  physics: {
+    enabled: true
   }
 };
 
 new vis.Network(container, data, options);
 
-const minSuspicion = 2;
+const minSuspicion = 3;
 const maxSuspicion = 5;
 function randomSuspicion() {
   return Math.round(
@@ -73,23 +76,61 @@ async function main() {
     await delay(0.1);
   }
 
-  for (let i = steps.length; i < steps.length + 30; i++) {
+  for (let i: number = steps.length; i < steps.length + 15; i++) {
     const suspicion = randomSuspicion();
+    const availableNodes = data.nodes.getIds();
+
+    if (i === steps.length + 1) {
+      fakeNewsDetected();
+    }
 
     const edges = Array.from({ length: suspicion }, () => {
-      return {
-        from: i,
-        to: Math.round(Math.random() * data.edges.length) // TODO prevent duplication
-      };
+      return availableNodes.length > 0
+        ? {
+            from: i,
+            to: availableNodes.splice(
+              Math.round(Math.random() * (availableNodes.length - 1)),
+              1
+            )[0]
+          }
+        : undefined;
     });
-    console.log(`suspition: ${suspicion} edges: ${edges.length}`);
+
+    console.log(edges);
+
+    // Could not spread
+    if (edges.filter(edge => edge !== undefined).length < suspicion) {
+      continue;
+    }
+
     data.edges.add(edges);
 
-    const node = { id: i, label: "FB", group: i };
+    const node = {
+      id: i,
+      label: "FB",
+      group: Math.round(Math.random() * 9 + 1)
+    };
     data.nodes.add(node);
 
     await delay(1);
   }
 }
 
+function fakeNewsDetected() {
+  rollBack();
+}
+
+async function rollBack() {
+  data.nodes.remove({ id: 0 });
+  await delay(0.1);
+  data.nodes.remove({ id: 1 });
+  await delay(0.1);
+  data.nodes.remove({ id: 2 });
+  await delay(0.1);
+  data.nodes.remove({ id: 3 });
+  await delay(0.1);
+  data.nodes.remove({ id: 4 });
+}
+
 main();
+
