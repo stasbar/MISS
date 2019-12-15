@@ -1,5 +1,22 @@
+// Assumptions
+//
+// The node is the proof (in for of post/record etc.)
+// Everyone can become node by posting a proof
+// So one user can create many nodes
+// Nodes creation is limited by public smart contract
+// We add the node on the graph, only when it's available to other people
+// to base thier assumptions on it.
+// The suspicion level indicate the leaving edges of node
+// suspition may vary from minSuspicion to maxSuspicion
+
+// Limitations
+//
+// Hidden nodes, one can consume time slot and don't publish proof, or his
+// proof won't be spreaded
+// DDoS on time slots
+
 import vis from "vis-network";
-import data from "./data";
+import data, { addNode, removeNode, addEdge } from "./data";
 import "./plot";
 
 async function delay(msec) {
@@ -36,49 +53,25 @@ function randomSuspicion() {
     Math.random() * (maxSuspicion - minSuspicion) + minSuspicion
   );
 }
-const steps = [
-  {
-    node: { id: 0, label: "FB", group: 0 },
-    edge: [
-      { from: 0, to: 1, hidden: true },
-      { from: 1, to: 2, hidden: true },
-      { from: 2, to: 3, hidden: true },
-      { from: 3, to: 4, hidden: true },
-      { from: 4, to: 0, hidden: true }
-    ]
-  },
-  {
-    node: { id: 1, label: "TW", group: 0 },
-    edge: []
-  },
-  {
-    node: { id: 2, label: "KB", group: 0 },
-    edge: []
-  },
-  {
-    node: { id: 3, label: "GH", group: 0 },
-    edge: []
-  },
-  {
-    node: { id: 4, label: "WWW", group: 0 },
-    edge: []
-  }
-];
 
 async function main() {
-  for (let i = 0; i < steps.length; i++) {
-    const { node, edge } = steps[i];
-    data.nodes.add(node);
-    data.edges.add(edge);
+  const initNodes = 5;
+  for (let i = 0; i < initNodes; i++) {
+    addNode(i, 0);
+    if (i + 1 == initNodes) {
+      addEdge(i, 0, true);
+    } else {
+      addEdge(i, i + 1, true);
+    }
 
     await delay(3);
   }
 
-  for (let i: number = steps.length; i < steps.length + 15; i++) {
+  for (let i: number = initNodes; i < initNodes + 15; i++) {
     const suspicion = randomSuspicion();
-    const availableNodes = data.nodes.getIds();
+    const availableNodes = data.nodes.get();
 
-    if (i === steps.length + 1) {
+    if (i === initNodes + 2) {
       fakeNewsDetected();
     }
 
@@ -86,10 +79,12 @@ async function main() {
       return availableNodes.length > 0
         ? {
             from: i,
-            to: availableNodes.splice(
-              Math.round(Math.random() * (availableNodes.length - 1)),
-              1
-            )[0]
+            to: Number(
+              availableNodes.splice(
+                Math.round(Math.random() * (availableNodes.length - 1)),
+                1
+              )[0].id
+            )
           }
         : undefined;
     });
@@ -99,14 +94,9 @@ async function main() {
       continue;
     }
 
-    data.edges.add(edges);
+    edges.forEach(edge => addEdge(edge.from, edge.to));
 
-    const node = {
-      id: i,
-      label: "FB",
-      group: Math.round(Math.random() * 9 + 1)
-    };
-    data.nodes.add(node);
+    addNode(i, Math.round(Math.random() * 9 + 1));
 
     await delay(1);
   }
@@ -117,15 +107,15 @@ function fakeNewsDetected() {
 }
 
 async function rollBack() {
-  data.nodes.remove({ id: 0 });
+  removeNode(0);
   await delay(0.1);
-  data.nodes.remove({ id: 1 });
+  removeNode(1);
   await delay(0.1);
-  data.nodes.remove({ id: 2 });
+  removeNode(2);
   await delay(0.1);
-  data.nodes.remove({ id: 3 });
+  removeNode(3);
   await delay(0.1);
-  data.nodes.remove({ id: 4 });
+  removeNode(4);
 }
 
 // TODO plot diagram of minSuspition/fakeNewsDetection
@@ -133,4 +123,3 @@ async function rollBack() {
 // TODO add perplot detection
 // TODO add curable nodes (remove them after some delay)
 main();
-

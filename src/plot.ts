@@ -12,8 +12,8 @@ var options = {
   dataAxis: {
     left: {
       range: {
-        min: -10,
-        max: 10
+        min: -1,
+        max: 30
       }
     }
   },
