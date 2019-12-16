@@ -8,6 +8,7 @@
     "build": "parcel build index.html"
   },
   "dependencies": {
+    "rxjs": "^6.5.3",
     "vis-network": "6.4.6",
     "vis-timeline": "6.2.10"
   },

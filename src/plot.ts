@@ -12,8 +12,7 @@ var options = {
   dataAxis: {
     left: {
       range: {
-        min: -1,
-        max: 30
+        min: -1
       }
     }
   },
@@ -87,4 +86,3 @@ function addDataPoint() {
   setTimeout(addDataPoint, DELAY);
 }
 addDataPoint();
-
