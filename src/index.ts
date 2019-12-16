@@ -146,4 +146,5 @@ async function rollBack() {
 // TODO try with non linear delays
 // TODO add perplot detection
 // TODO add curable nodes (remove them after some delay)
+// TODO add reactiveness, each node check his trustline in term of valid proof existence. (Each program startup can perform validity check)
 main();
