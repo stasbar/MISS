@@ -76,15 +76,16 @@ async function main() {
       addEdge(i, i + 1, true);
     }
 
-    /* await delay(3); */
-    await delayIndex(i);
+    await delay(3);
+    /* await delayIndex(i); */
   }
 
   for (let i: number = initNodes; i < initNodes + 50; i++) {
+    await delay(1);
     const suspicion = randomSuspicion();
     const availableNodes = data.nodes.get();
 
-    if (i === initNodes + 2) {
+    if (i === initNodes + 1) {
       fakeNewsDetected();
     }
 
@@ -114,8 +115,7 @@ async function main() {
       clearNodes();
       return;
     }
-    /* await delay(1); */
-    await delayIndex(i);
+    /* await delayIndex(i); */
   }
 
   while (true) {

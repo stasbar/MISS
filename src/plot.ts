@@ -5,26 +5,44 @@ var DELAY = 500; // delay in ms to add new data points
 // create a graph2d with an (currently empty) dataset
 var container = document.getElementById("visualization");
 var dataset = new vis.DataSet();
+var groups = new vis.DataSet();
+groups.add({
+  id: 0,
+  content: "Nodes",
+  options: {
+    drawPoints: {
+      style: "square" // square, circle
+    },
+    shaded: {
+      orientation: "bottom" // top, bottom
+    }
+  }
+});
+
+groups.add({
+  id: 1,
+  content: "Edges",
+  options: {
+    drawPoints: {
+      style: "circle" // square, circle
+    }
+  }
+});
 
 var options = {
   start: vis.moment().add(-30, "seconds"), // changed so its faster
   end: vis.moment(),
+  legend: true,
   dataAxis: {
     left: {
       range: {
         min: -1
       }
     }
-  },
-  drawPoints: {
-    style: "circle" // square, circle
-  },
-  shaded: {
-    orientation: "bottom" // top, bottom
   }
 };
 
-var graph2d = new vis.Graph2d(container, dataset, options);
+var graph2d = new vis.Graph2d(container, dataset, groups, options);
 
 // a function to generate data points
 function y(x) {
@@ -70,7 +88,13 @@ function addDataPoint() {
   var now = vis.moment();
   dataset.add({
     x: now,
-    y: data.nodes.getIds().length
+    y: data.nodes.getIds().length,
+    group: 0
+  });
+  dataset.add({
+    x: now,
+    y: data.edges.getIds().length,
+    group: 1
   });
 
   // remove all data points which are no longer visible
