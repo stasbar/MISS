@@ -1,6 +1,6 @@
 import vis from "vis-network";
 import { moment } from "vis-timeline";
-import { interval, BehaviorSubject, noop } from "rxjs";
+import { interval } from "rxjs";
 import { countBy, chain } from "lodash";
 
 moment.updateLocale("en", {
@@ -52,7 +52,8 @@ export function clearNodes() {
 export function isExtinct() {
   return moment().isAfter(expirationTime);
 }
-export function updateExpirationTimer() {
+
+function updateExpirationTimer() {
   if (expirationTime) {
     document.getElementById("expiration-timer").textContent =
       "File expire " + expirationTime.fromNow();
@@ -60,7 +61,7 @@ export function updateExpirationTimer() {
 }
 
 function updateGraphFeatures() {
-  function updateTopInDegree() {
+  (function updateTopInDegree() {
     const tos = countBy(data.edges.get(), "to");
     const sorted = chain(tos)
       .map((cnt, to) => ({ to, count: cnt }))
@@ -75,26 +76,23 @@ function updateGraphFeatures() {
         .reverse()
         .map(({ to, count }) => `𝞓(${to}) = ${count}`)
         .join(" | ");
-  }
-  function updateTopOutDegree() {
+  })();
+  (function updateTopOutDegree() {
     const froms = countBy(data.edges.get(), "from");
     const sorted = chain(froms)
       .map((cnt, from) => ({ from, count: cnt }))
       .sortBy("count")
-      .takeRight(3)
+      .takeRight(10)
       .value();
 
     console.log({ sorted });
     document.getElementById("max-out-degree").textContent =
-      "Top3 Out-Degree: " +
+      "Top10 Out-Degree: " +
       sorted
         .reverse()
         .map(({ from, count }) => `𝞓(${from}) = ${count}`)
         .join(" | ");
-  }
-
-  updateTopInDegree();
-  updateTopOutDegree();
+  })();
 }
 
 export default data;
