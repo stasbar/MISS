@@ -1,5 +1,10 @@
 # MISS
+
 How to prevent infection caused by stolen private key.
+
+## Simulation screen
+
+![Simulation Screen](images/simulation1.jpg)
 
 
 ```uml

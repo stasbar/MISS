@@ -1,6 +1,7 @@
 import vis from "vis-network";
 import { moment } from "vis-timeline";
 import { interval, BehaviorSubject, noop } from "rxjs";
+import { countBy, chain } from "lodash";
 
 moment.updateLocale("en", {
   relativeTime: {
@@ -14,31 +15,24 @@ const data = {
   edges: new vis.DataSet()
 };
 
-var expirationTime: BehaviorSubject<moment.Moment> = new BehaviorSubject<
-  moment.Moment
->(undefined);
+var expirationTime: moment.Moment = undefined;
 
 interval(1000).subscribe(updateExpirationTimer);
-
-expirationTime.subscribe({
-  next: v => (v ? updateExpirationTimer() : noop())
-});
+interval(1000).subscribe(updateGraphFeatures);
 
 export function addNode(id: number, group: number) {
-  if (
-    expirationTime.getValue() &&
-    moment().isAfter(expirationTime.getValue())
-  ) {
+  if (expirationTime && moment().isAfter(expirationTime)) {
     console.error("Can not add node, file expired");
     console.log({ now: moment(), extendedTo: expirationTime });
     return;
   }
 
-  if (!expirationTime.getValue()) {
-    expirationTime.next(moment());
+  if (!expirationTime) {
+    expirationTime = moment();
   }
+
   data.nodes.add({ id, group });
-  expirationTime.next(expirationTime.getValue().add(4000, "ms"));
+  expirationTime = expirationTime.add(4000, "ms");
   console.log({ now: moment(), extendedTo: expirationTime });
 }
 
@@ -56,13 +50,51 @@ export function clearNodes() {
 }
 
 export function isExtinct() {
-  return moment().isAfter(expirationTime.getValue());
+  return moment().isAfter(expirationTime);
 }
 export function updateExpirationTimer() {
-  if (expirationTime.getValue()) {
+  if (expirationTime) {
     document.getElementById("expiration-timer").textContent =
-      "File expire " + expirationTime.getValue().fromNow();
+      "File expire " + expirationTime.fromNow();
   }
+}
+
+function updateGraphFeatures() {
+  function updateTopInDegree() {
+    const tos = countBy(data.edges.get(), "to");
+    const sorted = chain(tos)
+      .map((cnt, to) => ({ to, count: cnt }))
+      .sortBy("count")
+      .takeRight(10)
+      .value();
+
+    console.log({ sorted });
+    document.getElementById("max-in-degree").textContent =
+      "Top10 In-Degree: " +
+      sorted
+        .reverse()
+        .map(({ to, count }) => `𝞓(${to}) = ${count}`)
+        .join(" | ");
+  }
+  function updateTopOutDegree() {
+    const froms = countBy(data.edges.get(), "from");
+    const sorted = chain(froms)
+      .map((cnt, from) => ({ from, count: cnt }))
+      .sortBy("count")
+      .takeRight(3)
+      .value();
+
+    console.log({ sorted });
+    document.getElementById("max-out-degree").textContent =
+      "Top3 Out-Degree: " +
+      sorted
+        .reverse()
+        .map(({ from, count }) => `𝞓(${from}) = ${count}`)
+        .join(" | ");
+  }
+
+  updateTopInDegree();
+  updateTopOutDegree();
 }
 
 export default data;

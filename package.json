@@ -8,6 +8,8 @@
     "build": "parcel build index.html"
   },
   "dependencies": {
+    "@types/lodash": "^4.14.149",
+    "lodash": "^4.17.15",
     "rxjs": "^6.5.3",
     "vis-network": "6.4.6",
     "vis-timeline": "6.2.10"
