@@ -22,26 +22,28 @@ async function delay(msec: number) {
 }
 
 async function main() {
-  for (let i: number = 0; i < 1000; i++) {
+  for (let i: number = 0; i < 500; i++) {
     await delay(0.01);
     /* await delayIndex(i); */
     const availableNodes = data.nodes.get();
     const pickedHost = Math.round(Math.random() * (availableNodes.length - 1));
 
     addNode(i, 0);
-    addEdge(i, pickedHost);
+    if (i !== 0) {
+      addEdge(i, pickedHost);
+    }
   }
 
   const availableNodes = data.nodes.get();
-  for (let i: number = 0; i < 1000; i++) {
-    const first = Math.round(Math.random() * (availableNodes.length - 1));
-    let second = Math.round(Math.random() * (availableNodes.length - 1));
-    /* while (second === first) { */
-    /*   second = Math.round(Math.random() * (availableNodes.length - 1)); */
-    /* } */
+  for (let i: number = 0; i < 500; i++) {
+    const from = Math.round(Math.random() * (availableNodes.length - 1));
+    let to = Math.round(Math.random() * (availableNodes.length - 1));
+    while (from === to) {
+      to = Math.round(Math.random() * (availableNodes.length - 1));
+    }
 
     await delay(0.01);
-    addEdge(first, second);
+    addEdge(to, from);
   }
 }
 

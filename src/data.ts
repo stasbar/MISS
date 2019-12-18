@@ -33,7 +33,6 @@ export function addNode(id: number, group: number) {
 
   data.nodes.add({ id, group });
   expirationTime = expirationTime.add(4000, "ms");
-  console.log({ now: moment(), extendedTo: expirationTime });
 }
 
 export function removeNode(id: number) {
@@ -69,7 +68,6 @@ function updateGraphFeatures() {
       .takeRight(10)
       .value();
 
-    console.log({ sorted });
     document.getElementById("max-in-degree").textContent =
       "Top10 In-Degree: " +
       sorted
@@ -85,7 +83,6 @@ function updateGraphFeatures() {
       .takeRight(10)
       .value();
 
-    console.log({ sorted });
     document.getElementById("max-out-degree").textContent =
       "Top10 Out-Degree: " +
       sorted
