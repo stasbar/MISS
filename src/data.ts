@@ -1,4 +1,4 @@
-import vis from "vis-network";
+import vis, { IdType } from "vis-network";
 import { moment } from "vis-timeline";
 import { interval } from "rxjs";
 import { countBy, chain } from "lodash";
@@ -20,7 +20,7 @@ var expirationTime: moment.Moment = undefined;
 interval(1000).subscribe(updateExpirationTimer);
 interval(1000).subscribe(updateGraphFeatures);
 
-export function addNode(id: number, group: number) {
+export function addNode(id: number | string | IdType, group: number = 0) {
   if (expirationTime && moment().isAfter(expirationTime)) {
     console.error("Can not add node, file expired");
     console.log({ now: moment(), extendedTo: expirationTime });
@@ -35,11 +35,15 @@ export function addNode(id: number, group: number) {
   expirationTime = expirationTime.add(4000, "ms");
 }
 
-export function removeNode(id: number) {
+export function removeNode(id: number | vis.IdType) {
   data.nodes.remove({ id });
 }
 
-export function addEdge(from: number, to: number, hidden: boolean = false) {
+export function addEdge(
+  from: number | string | IdType,
+  to: number | string | IdType,
+  hidden: boolean = false
+) {
   data.edges.add({ from, to, hidden });
 }
 
@@ -50,6 +54,24 @@ export function clearNodes() {
 
 export function isExtinct() {
   return moment().isAfter(expirationTime);
+}
+
+export function restore(nodes: vis.Node[], edges: vis.Edge[]) {
+  if (nodes) {
+    nodes.forEach(node => {
+      addNode(node.id, 0);
+    });
+  }
+  if (edges) {
+    edges.forEach(edge => {
+      addEdge(edge.from, edge.to, false);
+    });
+  }
+}
+
+export function persist() {
+  console.log(JSON.stringify(data.nodes.get()));
+  console.log(JSON.stringify(data.edges.get()));
 }
 
 function updateExpirationTimer() {

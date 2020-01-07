@@ -4,8 +4,12 @@ import data, {
   removeNode,
   addEdge,
   isExtinct,
-  clearNodes
+  clearNodes,
+  persist,
+  restore
 } from "./data";
+import edges from "./probdup/edges.json";
+import nodes from "./probdup/nodes.json";
 
 import "./plot";
 
@@ -35,9 +39,8 @@ async function delay(msec: number) {
   return new Promise(resolve => setTimeout(resolve, msec * 1000));
 }
 
-async function main() {
+async function generate() {
   const initNodes = 10;
-  const initEdges = 20;
 
   for (let i = 0; i < initNodes; i++) {
     await delay(0.5);
@@ -83,4 +86,4 @@ async function main() {
   }
 }
 
-main();
+restore(nodes, edges);
