@@ -69,7 +69,7 @@ export function restore(nodes: vis.Node[], edges: vis.Edge[]) {
   }
 }
 
-export function persist() {
+export function dump() {
   console.log(JSON.stringify(data.nodes.get()));
   console.log(JSON.stringify(data.edges.get()));
 }

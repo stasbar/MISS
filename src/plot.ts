@@ -29,6 +29,16 @@ groups.add({
   }
 });
 
+groups.add({
+  id: 2,
+  content: "Infected",
+  options: {
+    drawPoints: {
+      style: "square" // square, circle
+    }
+  }
+});
+
 var options = {
   start: vis.moment().add(-30, "seconds"), // changed so its faster
   end: vis.moment(),
@@ -95,6 +105,11 @@ function addDataPoint() {
     x: now,
     y: data.edges.getIds().length,
     group: 1
+  });
+  dataset.add({
+    x: now,
+    y: data.nodes.get().filter(node => node.group === 1).length,
+    group: 2
   });
 
   // remove all data points which are no longer visible

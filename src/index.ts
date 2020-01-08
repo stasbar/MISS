@@ -6,10 +6,11 @@
 // Nodes creation is limited by public smart contract
 // We add the node on the graph, only when it's available to other people
 // to base thier assumptions on it.
-// The suspicion level indicate the leaving edges of node
+// The suspicion level indicate the out edges of node
 // suspition may vary from minSuspicion to maxSuspicion
 // We assume that each node is equally popular, thus have the same chance of being trusted.
-// We assume that there is always someone willing to participate in spreading the proof. This could be motivated by the fact that clicking the link could be profitable by some kind of cryptocurrency (for example BAT) while preventing from spam attacks (generating proof require some stake in form of transaction fee).
+// We assume that there is always someone willing to participate in spreading the proof.
+// This could be motivated by the fact that clicking the link could be profitable by some kind of cryptocurrency (for example BAT) while preventing from spam attacks (generating proof require some stake in form of transaction fee).
 
 // Limitations
 //

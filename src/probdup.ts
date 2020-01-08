@@ -5,7 +5,7 @@ import data, {
   addEdge,
   isExtinct,
   clearNodes,
-  persist,
+  dump,
   restore
 } from "./data";
 import edges from "./probdup/edges.json";
@@ -17,6 +17,7 @@ import "./plot";
 var options = {
   edges: {
     arrows: "to",
+    color: { inherit: "to" },
     smooth: {
       type: "continuous" // continuous
     }
@@ -86,4 +87,29 @@ async function generate() {
   }
 }
 
-restore(nodes, edges);
+function publishOn(initNodes: number) {
+  const availableNodes = data.nodes.getIds();
+  for (let index = 0; index < initNodes; index++) {
+    const pickedHost = Math.round(Math.random() * (availableNodes.length - 1));
+    data.nodes.update({ id: pickedHost, group: 1 });
+  }
+}
+
+function spread() {
+  console.log("spread");
+  const infected: { id: number; group: number }[] = data.nodes
+    .get()
+    .filter(node => node.group === 1);
+  infected.forEach(node => {
+    const edges: { from: number; to: number }[] = data.edges.get();
+    edges
+      .filter(edge => node.id === edge.to)
+      .forEach(edge => {
+        data.nodes.update({ id: edge.from, group: 1 });
+      });
+  });
+}
+
+$("#restore").click(() => restore(nodes, edges));
+$("#publish").click(() => publishOn(5));
+$("#spread").click(spread);
