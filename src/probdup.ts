@@ -103,9 +103,10 @@ function spread() {
   infected.forEach(node => {
     const edges: { from: number; to: number }[] = data.edges.get();
     edges
-      .filter(edge => node.id === edge.to)
+      .filter(edge => node.id === edge.to || node.id === edge.from)
       .forEach(edge => {
         data.nodes.update({ id: edge.from, group: 1 });
+        data.nodes.update({ id: edge.to, group: 1 });
       });
   });
 }
