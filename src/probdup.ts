@@ -3,6 +3,8 @@ import data, {
   addNode,
   removeNode,
   addEdge,
+  updateNode,
+  updateEdge,
   isExtinct,
   clearNodes,
   dump,
@@ -95,22 +97,87 @@ function publishOn(initNodes: number) {
   }
 }
 
+interface Node {
+  id: number;
+  group: number;
+}
+interface Edge {
+  from: number;
+  to: number;
+}
+function buildAdjacentList(edges: Edge[]): Map<Number, Set<Node>> {
+  const adjacentList = new Map<Number, Set<Node>>();
+  edges.forEach(edge => {
+    const fromAdjances = adjacentList[edge.from] || new Set<Node>();
+    fromAdjances.add(edge.to);
+    const toAdjances = adjacentList[edge.to] || new Set<Node>();
+    toAdjances.add(edge.from);
+  });
+  return adjacentList;
+}
+
+function buildNeighboursRatio(
+  adjacentList: Map<Number, Node[]>
+): Array<Number> {
+  const neighboursRatio = new Array<Number>(adjacentList.size);
+  adjacentList.forEach((neighbours, nodeId) => {
+    neighboursRatio[nodeId] =
+      neighbours.filter(
+        neighbour => neighbour.group === 1 || neighbour.group === 2
+      ).length / neighbours.length;
+  });
+  return neighboursRatio;
+}
+
+// 0 - Health Susceptible initial state
+// 1 - Infected Acute when infected by EIP
+// 2 - Infected Recoverable - when all neighbours are infected
+// 3 - Healthly Quarantine - healed, can stay here forever if stayed long enough
+const epsilon = 0.6;
+const Zia = 2;
+const Zhq = 2;
+const tao = 20;
+let currentCycle = 0;
 function spread() {
   console.log("spread");
-  const infected: { id: number; group: number }[] = data.nodes
-    .get()
-    .filter(node => node.group === 1);
-  infected.forEach(node => {
-    const edges: { from: number; to: number }[] = data.edges.get();
-    edges
-      .filter(edge => node.id === edge.to || node.id === edge.from)
-      .forEach(edge => {
-        data.nodes.update({ id: edge.from, group: 1 });
-        data.nodes.update({ id: edge.to, group: 1 });
-      });
+  const nodes: Node[] = data.nodes.get();
+  const edges: Edge[] = data.edges.get();
+  const adjacentList: Map<Number, Node[]> = buildAdjacentList(nodes);
+  const neighboursRatio: Array<Number> = buildNeighboursRatio(adjacentList);
+  nodes.forEach(node => {
+    if (node.group === 0) {
+      if (neighboursRatio[node.id] >= epsilon) {
+        // More than epsilon of my neighbours are infected so do I
+        updateNode(node.id, 1);
+      }
+    } else if (node.group === 1) {
+      if (Math.random() <= 1 / Zia) {
+        if (neighboursRatio[node.id] === 1) {
+          // All of my neighbours are infected so do I
+          updateNode(node.id, 2);
+        } else {
+          updateNode(node.id, 3);
+        }
+      }
+    } else if (node.group === 2) {
+      if (neighboursRatio[node.id] < 1) {
+        // Not all of my neighbours are infected, so I suspect that something is
+        // going on there.
+        updateNode(node.id, 3);
+      }
+    } else if (node.group === 3) {
+      if (Math.random() <= 1 / Zhq && currentCycle < tao) {
+        if (neighboursRatio[node.id] >= epsilon) {
+          updateNode(node.id, 1);
+        } else {
+          updateNode(node.id, 0);
+        }
+      }
+    }
   });
+  currentCycle++;
 }
 
 $("#restore").click(() => restore(nodes, edges));
-$("#publish").click(() => publishOn(5));
+$("#publish").click(() => publishOn(1));
 $("#spread").click(spread);

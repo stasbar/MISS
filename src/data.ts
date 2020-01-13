@@ -35,6 +35,10 @@ export function addNode(id: number | string | IdType, group: number = 0) {
   expirationTime = expirationTime.add(4000, "ms");
 }
 
+export function updateNode(id: number | string | IdType, group: number) {
+  data.nodes.update({ id, group });
+}
+
 export function removeNode(id: number | vis.IdType) {
   data.nodes.remove({ id });
 }
