@@ -105,27 +105,39 @@ interface Edge {
   from: number;
   to: number;
 }
-function buildAdjacentList(edges: Edge[]): Map<Number, Set<Node>> {
-  const adjacentList = new Map<Number, Set<Node>>();
+function buildAdjacentList(
+  nodes: Node[],
+  edges: Edge[]
+): Map<Number, Array<Node>> {
+  const adjacentList = new Map<Number, Array<Node>>();
   edges.forEach(edge => {
-    const fromAdjances = adjacentList[edge.from] || new Set<Node>();
-    fromAdjances.add(edge.to);
-    const toAdjances = adjacentList[edge.to] || new Set<Node>();
-    toAdjances.add(edge.from);
+    const fromAdjances = adjacentList.get(edge.from) || new Array<Node>();
+    fromAdjances.push(nodes[edge.to]);
+    adjacentList.set(edge.from, fromAdjances);
+    const toAdjances = adjacentList.get(edge.to) || new Array<Node>();
+    toAdjances.push(nodes[edge.from]);
+    adjacentList.set(edge.to, toAdjances);
   });
+  console.log(`adjacentList size: ${adjacentList.size}`);
   return adjacentList;
 }
 
 function buildNeighboursRatio(
-  adjacentList: Map<Number, Node[]>
+  adjacentList: Map<Number, Array<Node>>
 ): Array<Number> {
   const neighboursRatio = new Array<Number>(adjacentList.size);
+  console.log(`adjacentList length ${adjacentList.size}`);
   adjacentList.forEach((neighbours, nodeId) => {
+    console.log(
+      `calculating neighboursRatio for ${nodeId} with neighbours count: ${neighbours.length}`
+    );
     neighboursRatio[nodeId] =
       neighbours.filter(
         neighbour => neighbour.group === 1 || neighbour.group === 2
       ).length / neighbours.length;
+    console.log(`neighbours ratio ${neighboursRatio[nodeId]}`);
   });
+  console.log({ neighboursRatio });
   return neighboursRatio;
 }
 
@@ -133,8 +145,8 @@ function buildNeighboursRatio(
 // 1 - Infected Acute when infected by EIP
 // 2 - Infected Recoverable - when all neighbours are infected
 // 3 - Healthly Quarantine - healed, can stay here forever if stayed long enough
-const epsilon = 0.6;
-const Zia = 2;
+const epsilon = 0.1;
+const Zia = 20;
 const Zhq = 2;
 const tao = 20;
 let currentCycle = 0;
@@ -142,7 +154,9 @@ function spread() {
   console.log("spread");
   const nodes: Node[] = data.nodes.get();
   const edges: Edge[] = data.edges.get();
-  const adjacentList: Map<Number, Node[]> = buildAdjacentList(nodes);
+  const adjacentList: Map<Number, Node[]> = buildAdjacentList(nodes, edges);
+  console.log(`builded adjacentList: ${adjacentList.size}`);
+
   const neighboursRatio: Array<Number> = buildNeighboursRatio(adjacentList);
   nodes.forEach(node => {
     if (node.group === 0) {
