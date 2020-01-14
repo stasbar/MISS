@@ -15,6 +15,13 @@ import nodes from "./probdup/nodes.json";
 
 import "./plot";
 
+enum State {
+  HS, //Health Susceptible initial state
+  IA, //Infected Acute when infected by EIP
+  IR, // Infected Recoverable - when all neighbours are infected
+  HQ // Healthly Quarantine - healed, can stay here forever if stayed long enough
+}
+
 // create a network
 var options = {
   edges: {
@@ -23,6 +30,12 @@ var options = {
     smooth: {
       type: "continuous" // continuous
     }
+  },
+  groups: {
+    0: { color: { background: "#97C2FC" } },
+    1: { color: { background: "#cc435d" } },
+    2: { color: { background: "#fff769" } },
+    3: { color: { background: "#9fff69" } }
   },
   physics: { stabilization: false }
 };
@@ -93,7 +106,7 @@ function publishOn(initNodes: number) {
   const availableNodes = data.nodes.getIds();
   for (let index = 0; index < initNodes; index++) {
     const pickedHost = Math.round(Math.random() * (availableNodes.length - 1));
-    data.nodes.update({ id: pickedHost, group: 1 });
+    updateNode(pickedHost, State.IA);
   }
 }
 
@@ -141,14 +154,10 @@ function buildNeighboursRatio(
   return neighboursRatio;
 }
 
-// 0 - Health Susceptible initial state
-// 1 - Infected Acute when infected by EIP
-// 2 - Infected Recoverable - when all neighbours are infected
-// 3 - Healthly Quarantine - healed, can stay here forever if stayed long enough
-const epsilon = 0.1;
-const Zia = 20;
-const Zhq = 2;
-const tao = 20;
+const epsilon = 0.25;
+const Zia = 100;
+const Zhq = 1;
+const tao = 200;
 let currentCycle = 0;
 function spread() {
   console.log("spread");
@@ -159,32 +168,32 @@ function spread() {
 
   const neighboursRatio: Array<Number> = buildNeighboursRatio(adjacentList);
   nodes.forEach(node => {
-    if (node.group === 0) {
+    if (node.group === State.HS) {
       if (neighboursRatio[node.id] >= epsilon) {
         // More than epsilon of my neighbours are infected so do I
-        updateNode(node.id, 1);
+        updateNode(node.id, State.IA);
       }
-    } else if (node.group === 1) {
+    } else if (node.group === State.IA) {
       if (Math.random() <= 1 / Zia) {
         if (neighboursRatio[node.id] === 1) {
           // All of my neighbours are infected so do I
-          updateNode(node.id, 2);
+          updateNode(node.id, State.IR);
         } else {
-          updateNode(node.id, 3);
+          updateNode(node.id, State.HQ);
         }
       }
-    } else if (node.group === 2) {
+    } else if (node.group === State.IR) {
       if (neighboursRatio[node.id] < 1) {
         // Not all of my neighbours are infected, so I suspect that something is
         // going on there.
-        updateNode(node.id, 3);
+        updateNode(node.id, State.HQ);
       }
-    } else if (node.group === 3) {
+    } else if (node.group === State.HQ) {
       if (Math.random() <= 1 / Zhq && currentCycle < tao) {
         if (neighboursRatio[node.id] >= epsilon) {
-          updateNode(node.id, 1);
+          updateNode(node.id, State.IA);
         } else {
-          updateNode(node.id, 0);
+          updateNode(node.id, State.HS);
         }
       }
     }
