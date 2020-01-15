@@ -24,25 +24,70 @@
   <body>
     <div class="container-fluid">
       <h1 class="display-1">MASTI Simulation</h1>
-      <h6 id="expiration-timer"></h6>
-      <h6 id="max-in-degree"></h6>
-      <h6 id="max-out-degree"></h6>
-      <button type="button" class="btn btn-light" id="generate">Generate</button>
-      <button type="button" class="btn btn-light" id="restore">Restore</button>
-      <button type="button" class="btn btn-light" id="dump">Dump</button>
-      <button type="button" class="btn btn-primary" id="publish">Publish</button>
-      <button type="button" class="btn btn-primary" id="spread">Spread</button>
-      <div class="form-check form-check-inline">
-        <input class="form-check-input" type="checkbox" value="" id="cbAutoSpread">
-        <label class="form-check-label" for="defaultCheck1">
-          Auto
-        </label>
+      <form class="col-md-6 mx-auto">
+
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <label for="formGroupExampleInput">No. nodes</label>
+            <input type="number" class="form-control" id="noNodes" value="100">
+          </div>
+          <div class="form-group col-md-6">
+            <label for="formGroupExampleInput2">Bootstraped</label>
+            <input type="number" class="form-control" id="formGroupExampleInput2" value="10">
+          </div>
+        </div>
+        <div class="form-group">
+          <legend class="col-form-label">Generation method</legend>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="probdup">
+            <label class="form-check-label" for="inlineRadio1">Propabilistic Duplication</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2" value="random">
+            <label class="form-check-label" for="inlineRadio2">Random</label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="formGroupExampleInput">ξ(xi)</label>
+          <input type="number" class="form-control" id="noNodes" value="0.25" max="1.0" min="0.0" step="0.1">
+        </div>
+        <div class="form-group">
+          <label for="formGroupExampleInput">τ(tau)</label>
+          <input type="number" class="form-control" id="noNodes" value="100" max="1000" min="1" step="1">
+        </div>
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <label for="formGroupExampleInput">Zhq</label>
+            <input type="number" class="form-control" id="noNodes" value="20">
+          </div>
+          <div class="form-group col-md-6">
+            <label for="formGroupExampleInput2">Zia</label>
+            <input type="number" class="form-control" id="formGroupExampleInput2" value="1">
+          </div>
+        </div>
+      </form>
+      <div class="col-md-6 mx-auto">
+        <button type="button" class="btn btn-light" id="generate">Generate</button>
+        <button type="button" class="btn btn-light" id="restore">Restore</button>
+        <button type="button" class="btn btn-light" id="dump">Dump</button>
+        <button type="button" class="btn btn-primary" id="publish">Publish</button>
+        <button type="button" class="btn btn-primary" id="spread">Spread</button>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="checkbox" value="" id="cbAutoSpread">
+          <label class="form-check-label" for="defaultCheck1">
+            Auto
+          </label>
+        </div>
       </div>
 
       <div class="row" id="container">
         <div class="col" id="network"></div>
         <div class="col" id="visualization"></div>
       </div>
+      <h6 id="expiration-timer"></h6>
+      <h6 id="max-in-degree"></h6>
+      <h6 id="max-out-degree"></h6>
+      <h6 id="cycles"></h6>
     </div>
 
     <!-- <script src="src/index.ts"></script> -->
