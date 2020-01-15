@@ -31,7 +31,7 @@ export function addNode(id: number | string | IdType, group: number = 0) {
     expirationTime = moment();
   }
 
-  data.nodes.add({ id, group });
+  data.nodes.add({ id, group, title: id });
   expirationTime = expirationTime.add(4000, "ms");
 }
 
@@ -56,11 +56,17 @@ export function clear() {
   data.edges.clear();
 }
 
+export function reset() {
+  const newNodes = data.nodes.getIds().map(id => ({ id, group: 0 }));
+  data.nodes.update(newNodes);
+}
+
 export function isExtinct() {
   return moment().isAfter(expirationTime);
 }
 
 export function restore(nodes: vis.Node[], edges: vis.Edge[]) {
+  clear();
   if (nodes) {
     nodes.forEach(node => {
       addNode(node.id, 0);

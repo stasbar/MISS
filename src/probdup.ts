@@ -1,14 +1,11 @@
 ﻿import vis from "vis-network";
 import data, {
   addNode,
-  removeNode,
   addEdge,
   updateNode,
-  updateEdge,
-  isExtinct,
   clear,
-  dump,
-  restore
+  restore,
+  reset
 } from "./data";
 import edges from "./probdup/edges.json";
 import nodes from "./probdup/nodes.json";
@@ -17,6 +14,7 @@ import { State } from "./plot";
 
 // create a network
 var options = {
+  interaction: { hover: true },
   edges: {
     arrows: "to",
     color: { inherit: "to" },
@@ -30,79 +28,144 @@ var options = {
     2: { color: { background: "#fff769" } },
     3: { color: { background: "#9fff69" } }
   },
-  physics: { stabilization: false }
+  physics: {
+    stabilization: false,
+    barnesHut: {
+      gravitationalConstant: -36000,
+      centralGravity: 0
+    }
+  }
 };
 
 const networkContainer = document.getElementById("network");
 new vis.Network(networkContainer, data, options);
 
-const minSuspicion = 1;
-const maxSuspicion = 4;
-function randomSuspicion() {
-  return Math.round(
-    Math.random() * (maxSuspicion - minSuspicion) + minSuspicion
-  );
-}
-
 async function delay(msec: number) {
   return new Promise(resolve => setTimeout(resolve, msec * 1000));
 }
 
-async function generate() {
-  clear();
-  console.log("generate");
-
-  const initNodes = 10;
-
-  for (let i = 0; i < initNodes; i++) {
-    await delay(0.5);
-    /* await delayIndex(i); */
-    const suspicion = randomSuspicion();
-
-    const availableNodes = data.nodes.get();
-    const edges = Array.from({ length: suspicion }, () =>
-      availableNodes.length > 0
-        ? {
-            from: i,
-            to: Number(
-              availableNodes.splice(
-                Math.round(Math.random() * (availableNodes.length - 1)),
-                1
-              )[0].id
-            )
-          }
-        : undefined
-    );
-
-    addNode(i, 0);
-
-    edges
-      .filter(edge => edge !== undefined)
-      .forEach(edge => addEdge(edge.from, edge.to));
-  }
-
-  for (let i: number = initNodes; i < initNodes + 90; i++) {
+async function generateRandom(noNodes: number) {
+  for (let i: number = 0; i < noNodes; i++) {
     await delay(0.01);
     /* await delayIndex(i); */
     const availableNodes = data.nodes.get();
     const pickedHost = Math.round(Math.random() * (availableNodes.length - 1));
 
+    addNode(i, 0);
+    if (i !== 0) {
+      addEdge(i, pickedHost);
+    }
+  }
+
+  const availableNodes = data.nodes.get();
+  for (let i: number = 0; i < noNodes; i++) {
+    const from = Math.round(Math.random() * (availableNodes.length - 1));
+    let to = Math.round(Math.random() * (availableNodes.length - 1));
+    while (from === to) {
+      to = Math.round(Math.random() * (availableNodes.length - 1));
+    }
+
+    await delay(0.01);
+    addEdge(to, from);
+  }
+}
+
+async function generatePropDup(noNodes: number) {
+  console.log("generate");
+
+  const initNodes = Number($("#initNodes").val());
+  const initEdges = Number($("#initEdges").val());
+
+  // Build tree
+  for (let i = 0; i < initNodes; i++) {
+    await delay(0.1);
+    addNode(i, 0);
+    if (i == 0) continue;
+
+    const randomNeighbour = Number(Math.round(Math.random() * (i - 1)));
+    addEdge(i, randomNeighbour);
+  }
+
+  //Fill with random edges
+  for (let i = 0; i < initEdges - initNodes + 1; i++) {
+    await delay(0.1);
+    let from: number | string;
+    let to: number | string;
+    let isAlreadyLink: boolean = true;
+    while (isAlreadyLink) {
+      const availableNodes = data.nodes.get();
+      from = availableNodes.splice(
+        Math.round(Math.random() * (availableNodes.length - 1)),
+        1
+      )[0].id;
+
+      to = availableNodes.splice(
+        Math.round(Math.random() * (availableNodes.length - 1)),
+        1
+      )[0].id;
+      console.log({ from, to });
+
+      isAlreadyLink = data.edges
+        .get()
+        .some(
+          (edge: vis.Edge) =>
+            (edge.from === from && edge.to === to) ||
+            (edge.from === to && edge.to === from)
+        );
+    }
+
+    addEdge(from, to);
+  }
+
+  const phi = Number($("#phi ").val());
+  for (let i: number = initNodes; i < noNodes; i++) {
+    await delay(0.01);
+    /* await delayIndex(i); */
+    const availableNodes = data.nodes.get();
+    let pickedHost = Math.round(Math.random() * (availableNodes.length - 1));
+    while (pickedHost === i) {
+      pickedHost = Math.round(Math.random() * (availableNodes.length - 1));
+    }
+
     data.edges
       .get()
       .filter((edge: vis.Edge) => edge.from === pickedHost)
-      .filter(() => Math.random() > 0.5)
-      .forEach((edge: vis.Edge) => addEdge(i, Number(edge.to)));
+      .filter(() => Math.random() <= phi)
+      .forEach((edge: vis.Edge) => {
+        if (i === edge.to) {
+          throw new Error("Can not create self loop");
+        }
+        addEdge(i, Number(edge.to));
+      });
 
-    addNode(i, 0);
+    data.edges
+      .get()
+      .filter((edge: vis.Edge) => edge.to === pickedHost)
+      .filter(() => Math.random() <= phi)
+      .forEach((edge: vis.Edge) => {
+        if (i === edge.from) {
+          throw new Error("Can not create self loop");
+        }
+        addEdge(i, Number(edge.from));
+      });
+
+    addNode(i, State.HS);
     addEdge(i, pickedHost);
   }
 }
 
 function publishOn(initNodes: number) {
-  const availableNodes = data.nodes.getIds();
+  console.log("publish");
+  const availableNodes = data.nodes.get();
   for (let index = 0; index < initNodes; index++) {
-    const pickedHost = Math.round(Math.random() * (availableNodes.length - 1));
-    updateNode(pickedHost, State.IA);
+    const pickedHostIndex = Math.round(
+      Math.random() * (availableNodes.length - 1)
+    );
+    const pickedHost = availableNodes[pickedHostIndex];
+    updateNode(pickedHost.id, State.IA);
+    /* if (pickedHost.group === State.IA && pickedHost.group === State.IR) { */
+    /*   updateNode(pickedHost.id, State.IA); */
+    /* } */
   }
 }
 
@@ -127,7 +190,6 @@ function buildAdjacentList(
     toAdjances.push(nodes[edge.from]);
     adjacentList.set(edge.to, toAdjances);
   });
-  console.log(`adjacentList size: ${adjacentList.size}`);
   return adjacentList;
 }
 
@@ -135,37 +197,32 @@ function buildNeighboursRatio(
   adjacentList: Map<Number, Array<Node>>
 ): Array<Number> {
   const neighboursRatio = new Array<Number>(adjacentList.size);
-  console.log(`adjacentList length ${adjacentList.size}`);
   adjacentList.forEach((neighbours, nodeId) => {
-    console.log(
-      `calculating neighboursRatio for ${nodeId} with neighbours count: ${neighbours.length}`
-    );
     neighboursRatio[nodeId] =
       neighbours.filter(
         neighbour => neighbour.group === 1 || neighbour.group === 2
       ).length / neighbours.length;
-    console.log(`neighbours ratio ${neighboursRatio[nodeId]}`);
   });
-  console.log({ neighboursRatio });
   return neighboursRatio;
 }
 
-const epsilon = 0.25;
-const Zia = 25;
-const Zhq = 1;
-const tao = 200;
 let currentCycle = 0;
-function spread() {
+
+function spread(ignoreAuto: boolean) {
+  const xi = Number($("#xi").val());
+  const Zia = Number($("#zia").val());
+  const Zhq = Number($("#zhq").val());
+  const tau = Number($("#tau").val());
+  console.log({ xi, Zia, Zhq, tau });
   console.log("spread");
   const nodes: Node[] = data.nodes.get();
   const edges: Edge[] = data.edges.get();
   const adjacentList: Map<Number, Node[]> = buildAdjacentList(nodes, edges);
-  console.log(`builded adjacentList: ${adjacentList.size}`);
 
   const neighboursRatio: Array<Number> = buildNeighboursRatio(adjacentList);
   nodes.forEach(node => {
     if (node.group === State.HS) {
-      if (neighboursRatio[node.id] >= epsilon) {
+      if (neighboursRatio[node.id] >= xi) {
         // More than epsilon of my neighbours are infected so do I
         updateNode(node.id, State.IA);
       }
@@ -185,8 +242,8 @@ function spread() {
         updateNode(node.id, State.HQ);
       }
     } else if (node.group === State.HQ) {
-      if (Math.random() <= 1 / Zhq && currentCycle < tao) {
-        if (neighboursRatio[node.id] >= epsilon) {
+      if (Math.random() <= 1 / Zhq && currentCycle < tau) {
+        if (neighboursRatio[node.id] >= xi) {
           updateNode(node.id, State.IA);
         } else {
           updateNode(node.id, State.HS);
@@ -198,8 +255,9 @@ function spread() {
   currentCycle++;
   if ($("#cbAutoSpread").prop("checked")) {
     if (neighboursRatio.some(ratio => ratio !== 1 && ratio !== 0)) {
-      console.log("auto checked");
-      setTimeout(spread, 200);
+      if (!ignoreAuto) {
+        setTimeout(spread, 100);
+      }
     } else if (!neighboursRatio.some(ratio => ratio !== 0)) {
       alert("Extinction");
       console.log("Extinction");
@@ -213,6 +271,24 @@ function spread() {
 }
 
 $("#restore").click(() => restore(nodes, edges));
-$("#publish").click(() => publishOn(1));
-$("#spread").click(spread);
-$("#generate").click(generate);
+$("#publish").click(async () => {
+  const publishCount = Number($("#publishCount").val());
+  for (let i = 0; i < publishCount; i++) {
+    publishOn(1);
+    await delay(0.2);
+    spread(true);
+    await delay(0.2);
+  }
+  spread(false);
+});
+$("#spread").click(() => spread(false));
+$("#generate").click(() => {
+  clear();
+  const noNodes = Number($("#noNodes ").val());
+  if ($("#propDup").prop("checked")) {
+    generatePropDup(noNodes);
+  } else {
+    generateRandom(noNodes);
+  }
+});
+$("#reset").click(reset);
