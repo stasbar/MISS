@@ -5,40 +5,117 @@
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<!-- Bootstrap CSS -->
+    <!-- Bootstrap CSS -->
     <style>#container {
-        margin: 0 100px 0 0;
-      }</style>
+  margin: 0 100px 0 0;
+}</style>
 
     <style>#mynetwork {
-        width: 600px;
-        height: 400px;
-        border: 1px solid lightgray;
-      }</style>
+  width: 600px;
+  height: 400px;
+  border: 1px solid lightgray;
+}</style>
   <link rel="stylesheet" href="/main.9a7cfb7e.css"></head>
 
   <body>
     <div class="container-fluid">
       <h1 class="display-1">MASTI Simulation</h1>
+      <form>
+        <div class="form-row">
+          <div class="form-group col-md-2">
+            <label for="noNodes">No. nodes</label>
+            <input type="number" class="form-control" id="noNodes" value="100">
+          </div>
+
+          <div class="form-group col-md-4">
+            <legend class="col-form-label">Generation method</legend>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="inlineRadioOptions" id="propDup" value="probdup" checked="">
+              <label class="form-check-label" for="propDup">Propabilistic Duplication</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="inlineRadioOptions" id="random" value="random">
+              <label class="form-check-label" for="random">Random</label>
+            </div>
+          </div>
+
+          <div class="form-group col-md-2">
+            <label for="initNodes">j: inital nodes</label>
+            <input type="number" class="form-control" id="initNodes" value="10" min="0">
+          </div>
+          <div class="form-group col-md-2">
+            <label for="initEdges">l: inital edges</label>
+            <input type="number" class="form-control" id="initEdges" value="20" min="0">
+          </div>
+          <div class="form-group col-md-2">
+            <label for="phi">φ: prob. of inheriting trust</label>
+            <input type="number" class="form-control" id="phi" value="0.5" min="0.01" max="1">
+          </div>
+        </div>
+
+        <div class="form-row form-group">
+          <div class="btn-group" role="group" aria-label="Basic example">
+            <button type="button" class="btn btn-secondary" id="generate">Generate</button>
+            <button type="button" class="btn btn-light" id="restore">Restore</button>
+            <button type="button" class="btn btn-light" id="dump">Dump</button>
+          </div>
+        </div>
+
+
+        <div class="form-row form-group">
+          <div class="col-md-3">
+            <label for="xi">ξ(xi): Min. proportion of infected neighbours</label>
+            <input type="number" class="form-control" id="xi" value="0.25" max="1.0" min="0.0" step="0.1">
+          </div>
+          <div class="col-md-3">
+            <label for="tau">τ(tau): Time to immunization</label>
+            <input type="number" class="form-control" id="tau" value="100" max="1000" min="1" step="1">
+          </div>
+          <div class="col-md-3">
+            <label for="zhq">Zhq: Mean time in HQ state</label>
+            <input type="number" class="form-control" id="zhq" value="1">
+          </div>
+          <div class="col-md-3">
+            <label for="zia">Zia: Mean time in IA state</label>
+            <input type="number" class="form-control" id="zia" value="25">
+          </div>
+        </div>
+
+        <div class="form-row form-group">
+          <div class="input-group mb-3 col-md-4">
+            <input type="number" id="publishCount" class="form-control" aria-label="no. publications" aria-describedby="publish" value="1">
+            <div class="input-group-append">
+              <button class="btn btn-outline-primary" type="button" id="publish">Publish</button>
+            </div>
+          </div>
+          <button type="button" class="btn btn-danger" id="spread">Spread</button>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" value="" id="cbAutoSpread">
+            <label class="form-check-label" for="defaultCheck1">
+              Auto
+            </label>
+          </div>
+          <button type="button" class="btn btn-light" id="reset">Reset</button>
+        </div>
+
+      </form>
+
+      <div class="row" id="container">
+        <div class="col-md-6" id="network"></div>
+        <div class="col-md-6" id="visualization"></div>
+      </div>
       <h6 id="expiration-timer"></h6>
       <h6 id="max-in-degree"></h6>
       <h6 id="max-out-degree"></h6>
-      <button type="button" class="btn btn-light" id="restore">Restore</button>
-      <button type="button" class="btn btn-light" id="dump">Dump</button>
-      <button type="button" class="btn btn-primary" id="publish">Publish</button>
-      <button type="button" class="btn btn-primary" id="spread">Spread</button>
-      <div class="row" id="container">
-        <div class="col" id="network"></div>
-        <div class="col" id="visualization"></div>
-      </div>
+      <h6 id="cycles"></h6>
     </div>
 
     <!-- <script src="src/index.ts"></script> -->
     <!-- <script src="src/probdup.ts"></script> -->
-    <script src="/main.ac7549cf.js"></script>
+    <script src="/main.ddc797d9.js"></script>
     <!-- <script src="src/randdup.ts"></script> -->
 
-  
+
   </body>
 </html>
 
