@@ -6,21 +6,14 @@ import data, {
   updateNode,
   updateEdge,
   isExtinct,
-  clearNodes,
+  clear,
   dump,
   restore
 } from "./data";
 import edges from "./probdup/edges.json";
 import nodes from "./probdup/nodes.json";
 
-import "./plot";
-
-enum State {
-  HS, //Health Susceptible initial state
-  IA, //Infected Acute when infected by EIP
-  IR, // Infected Recoverable - when all neighbours are infected
-  HQ // Healthly Quarantine - healed, can stay here forever if stayed long enough
-}
+import { State } from "./plot";
 
 // create a network
 var options = {
@@ -56,6 +49,9 @@ async function delay(msec: number) {
 }
 
 async function generate() {
+  clear();
+  console.log("generate");
+
   const initNodes = 10;
 
   for (let i = 0; i < initNodes; i++) {
@@ -85,7 +81,7 @@ async function generate() {
       .forEach(edge => addEdge(edge.from, edge.to));
   }
 
-  for (let i: number = initNodes; i < initNodes + 990; i++) {
+  for (let i: number = initNodes; i < initNodes + 90; i++) {
     await delay(0.01);
     /* await delayIndex(i); */
     const availableNodes = data.nodes.get();
@@ -155,7 +151,7 @@ function buildNeighboursRatio(
 }
 
 const epsilon = 0.25;
-const Zia = 100;
+const Zia = 25;
 const Zhq = 1;
 const tao = 200;
 let currentCycle = 0;
@@ -198,9 +194,25 @@ function spread() {
       }
     }
   });
+
   currentCycle++;
+  if ($("#cbAutoSpread").prop("checked")) {
+    if (neighboursRatio.some(ratio => ratio !== 1 && ratio !== 0)) {
+      console.log("auto checked");
+      setTimeout(spread, 200);
+    } else if (!neighboursRatio.some(ratio => ratio !== 0)) {
+      alert("Extinction");
+      console.log("Extinction");
+      $("#cbAutoSpread").prop("checked", false);
+    } else {
+      alert("Epidemic");
+      console.log("Epidemic");
+      $("#cbAutoSpread").prop("checked", false);
+    }
+  }
 }
 
 $("#restore").click(() => restore(nodes, edges));
 $("#publish").click(() => publishOn(1));
 $("#spread").click(spread);
+$("#generate").click(generate);

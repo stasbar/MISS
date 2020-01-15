@@ -19,13 +19,7 @@
 // DDoS on time slots
 
 import vis from "vis-network";
-import data, {
-  addNode,
-  removeNode,
-  addEdge,
-  isExtinct,
-  clearNodes
-} from "./data";
+import data, { addNode, removeNode, addEdge, isExtinct, clear } from "./data";
 import "./plot";
 
 async function delay(msec: number) {
@@ -113,7 +107,7 @@ async function main() {
 
     addNode(i, Math.round(Math.random() * 9 + 1));
     if (isExtinct()) {
-      clearNodes();
+      clear();
       return;
     }
     /* await delayIndex(i); */
@@ -121,7 +115,7 @@ async function main() {
 
   while (true) {
     if (isExtinct()) {
-      clearNodes();
+      clear();
     }
     await delay(1);
   }

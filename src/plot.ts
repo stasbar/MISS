@@ -2,6 +2,13 @@ import vis from "vis-timeline";
 import data from "./data";
 var DELAY = 500; // delay in ms to add new data points
 
+export enum State {
+  HS, //Health Susceptible initial state
+  IA, //Infected Acute when infected by EIP
+  IR, // Infected Recoverable - when all neighbours are infected
+  HQ // Healthly Quarantine - healed, can stay here forever if stayed long enough
+}
+
 // create a graph2d with an (currently empty) dataset
 var container = document.getElementById("visualization");
 var dataset = new vis.DataSet();
@@ -32,6 +39,16 @@ groups.add({
 groups.add({
   id: 2,
   content: "Infected",
+  options: {
+    drawPoints: {
+      style: "square" // square, circle
+    }
+  }
+});
+
+groups.add({
+  id: 3,
+  content: "Healthly",
   options: {
     drawPoints: {
       style: "square" // square, circle
@@ -108,8 +125,19 @@ function addDataPoint() {
   });
   dataset.add({
     x: now,
-    y: data.nodes.get().filter(node => node.group === 1).length,
+    y: data.nodes
+      .get()
+      .filter(node => node.group === State.IA || node.group === State.IR)
+      .length,
     group: 2
+  });
+  dataset.add({
+    x: now,
+    y: data.nodes
+      .get()
+      .filter(node => node.group === State.HS || node.group === State.HQ)
+      .length,
+    group: 3
   });
 
   // remove all data points which are no longer visible

@@ -51,7 +51,7 @@ export function addEdge(
   data.edges.add({ from, to, hidden });
 }
 
-export function clearNodes() {
+export function clear() {
   data.nodes.clear();
   data.edges.clear();
 }
