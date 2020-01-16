@@ -1,44 +1,19 @@
 ﻿import vis from "vis-network";
-import data, {
+import {
   addNode,
   addEdge,
   updateNode,
   clear,
-  restore,
-  reset
+  reset,
+  setData,
+  getNodes,
+  getEdges
 } from "./data";
-import edges from "./probdup/edges.json";
-import nodes from "./probdup/nodes.json";
+import nodeEdges1000 from "./probdup/nodeEdge1000.json";
 
 import { State } from "./plot";
-
-// create a network
-var options = {
-  interaction: { hover: true },
-  edges: {
-    arrows: "to",
-    color: { inherit: "to" },
-    smooth: {
-      type: "continuous" // continuous
-    }
-  },
-  groups: {
-    0: { color: { background: "#97C2FC" } },
-    1: { color: { background: "#cc435d" } },
-    2: { color: { background: "#fff769" } },
-    3: { color: { background: "#9fff69" } }
-  },
-  physics: {
-    stabilization: false,
-    barnesHut: {
-      gravitationalConstant: -36000,
-      centralGravity: 0
-    }
-  }
-};
-
-const networkContainer = document.getElementById("network");
-new vis.Network(networkContainer, data, options);
+import "./network";
+import { importNetwork, exportNetwork } from "./utils";
 
 async function delay(msec: number) {
   return new Promise(resolve => setTimeout(resolve, msec * 1000));
@@ -48,7 +23,7 @@ async function generateRandom(noNodes: number) {
   for (let i: number = 0; i < noNodes; i++) {
     await delay(0.01);
     /* await delayIndex(i); */
-    const availableNodes = data.nodes.get();
+    const availableNodes = getNodes().get();
     const pickedHost = Math.round(Math.random() * (availableNodes.length - 1));
 
     addNode(i, 0);
@@ -57,7 +32,7 @@ async function generateRandom(noNodes: number) {
     }
   }
 
-  const availableNodes = data.nodes.get();
+  const availableNodes = getNodes().get();
   for (let i: number = 0; i < noNodes; i++) {
     const from = Math.round(Math.random() * (availableNodes.length - 1));
     let to = Math.round(Math.random() * (availableNodes.length - 1));
@@ -93,7 +68,7 @@ async function generatePropDup(noNodes: number) {
     let to: number | string;
     let isAlreadyLink: boolean = true;
     while (isAlreadyLink) {
-      const availableNodes = data.nodes.get();
+      const availableNodes = getNodes().get();
       from = availableNodes.splice(
         Math.round(Math.random() * (availableNodes.length - 1)),
         1
@@ -103,9 +78,8 @@ async function generatePropDup(noNodes: number) {
         Math.round(Math.random() * (availableNodes.length - 1)),
         1
       )[0].id;
-      console.log({ from, to });
 
-      isAlreadyLink = data.edges
+      isAlreadyLink = getEdges()
         .get()
         .some(
           (edge: vis.Edge) =>
@@ -121,7 +95,7 @@ async function generatePropDup(noNodes: number) {
   for (let i: number = initNodes; i < noNodes; i++) {
     await delay(0.01);
     /* await delayIndex(i); */
-    const availableNodes = data.nodes.get();
+    const availableNodes = getNodes().get();
     let pickedHost = Math.round(Math.random() * (availableNodes.length - 1));
     while (pickedHost === i) {
       pickedHost = Math.round(Math.random() * (availableNodes.length - 1));
@@ -154,18 +128,16 @@ async function generatePropDup(noNodes: number) {
   }
 }
 
-function publishOn(initNodes: number) {
+function publish() {
   console.log("publish");
-  const availableNodes = data.nodes.get();
-  for (let index = 0; index < initNodes; index++) {
-    const pickedHostIndex = Math.round(
-      Math.random() * (availableNodes.length - 1)
-    );
-    const pickedHost = availableNodes[pickedHostIndex];
+  const availableNodes = getNodes().get();
+  const pickedHost = availableNodes.find(
+    node => node.group === State.HS || node.group === State.HQ
+  );
+  if (pickedHost) {
     updateNode(pickedHost.id, State.IA);
-    /* if (pickedHost.group === State.IA && pickedHost.group === State.IR) { */
-    /*   updateNode(pickedHost.id, State.IA); */
-    /* } */
+  } else {
+    console.error("Could not find healthly node");
   }
 }
 
@@ -209,12 +181,11 @@ function buildNeighboursRatio(
 let currentCycle = 0;
 
 function spread(ignoreAuto: boolean) {
+  console.log("spread");
   const xi = Number($("#xi").val());
   const Zia = Number($("#zia").val());
   const Zhq = Number($("#zhq").val());
   const tau = Number($("#tau").val());
-  console.log({ xi, Zia, Zhq, tau });
-  console.log("spread");
   const nodes: Node[] = data.nodes.get();
   const edges: Edge[] = data.edges.get();
   const adjacentList: Map<Number, Node[]> = buildAdjacentList(nodes, edges);
@@ -270,11 +241,16 @@ function spread(ignoreAuto: boolean) {
   }
 }
 
-$("#restore").click(() => restore(nodes, edges));
+$("#dump").click(() => exportNetwork(network));
+$("#restore").click(() => {
+  const data = importNetwork(nodeEdges1000);
+  setData(data);
+  createNetwork(data);
+});
 $("#publish").click(async () => {
   const publishCount = Number($("#publishCount").val());
   for (let i = 0; i < publishCount; i++) {
-    publishOn(1);
+    publish();
     await delay(0.2);
     spread(true);
     await delay(0.2);
@@ -291,4 +267,9 @@ $("#generate").click(() => {
     generateRandom(noNodes);
   }
 });
-$("#reset").click(reset);
+$("#reset").click(() => {
+  currentCycle = 0;
+  reset();
+});
+const data = importNetwork(nodeEdges1000);
+setData(data);

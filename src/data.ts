@@ -3,6 +3,10 @@ import { moment } from "vis-timeline";
 import { interval } from "rxjs";
 import { countBy, chain } from "lodash";
 
+interface Data {
+  nodes: vis.DataSet<any, "id">;
+  edges: vis.DataSet<any, "id">;
+}
 moment.updateLocale("en", {
   relativeTime: {
     s: "%d seconds"
@@ -10,7 +14,7 @@ moment.updateLocale("en", {
 });
 
 console.log("Evalutated data.ts");
-const data = {
+let data: Data = {
   nodes: new vis.DataSet(),
   edges: new vis.DataSet()
 };
@@ -20,7 +24,30 @@ var expirationTime: moment.Moment = undefined;
 interval(1000).subscribe(updateExpirationTimer);
 interval(1000).subscribe(updateGraphFeatures);
 
-export function addNode(id: number | string | IdType, group: number = 0) {
+export function getData(): Data {
+  return data;
+}
+export function getNodes(): vis.DataSet<any, "id"> {
+  return data.nodes;
+}
+export function getEdges(): vis.DataSet<any, "id"> {
+  return data.edges;
+}
+export function setData(newData: Data) {
+  data = newData;
+}
+
+export function clear() {
+  data.nodes.clear();
+  data.edges.clear();
+}
+
+export function reset() {
+  const newNodes = data.nodes.getIds().map(id => ({ id, group: 0 }));
+  data.nodes.update(newNodes);
+}
+
+export function addNode(id: IdType, group: number = 0) {
   if (expirationTime && moment().isAfter(expirationTime)) {
     console.error("Can not add node, file expired");
     console.log({ now: moment(), extendedTo: expirationTime });
@@ -45,43 +72,13 @@ export function removeNode(id: number | vis.IdType) {
 
 export function addEdge(
   from: number | string | IdType,
-  to: number | string | IdType,
-  hidden: boolean = false
+  to: number | string | IdType
 ) {
-  data.edges.add({ from, to, hidden });
-}
-
-export function clear() {
-  data.nodes.clear();
-  data.edges.clear();
-}
-
-export function reset() {
-  const newNodes = data.nodes.getIds().map(id => ({ id, group: 0 }));
-  data.nodes.update(newNodes);
+  data.edges.add({ from, to });
 }
 
 export function isExtinct() {
   return moment().isAfter(expirationTime);
-}
-
-export function restore(nodes: vis.Node[], edges: vis.Edge[]) {
-  clear();
-  if (nodes) {
-    nodes.forEach(node => {
-      addNode(node.id, 0);
-    });
-  }
-  if (edges) {
-    edges.forEach(edge => {
-      addEdge(edge.from, edge.to, false);
-    });
-  }
-}
-
-export function dump() {
-  console.log(JSON.stringify(data.nodes.get()));
-  console.log(JSON.stringify(data.edges.get()));
 }
 
 function updateExpirationTimer() {
@@ -123,5 +120,3 @@ function updateGraphFeatures() {
         .join(" | ");
   })();
 }
-
-export default data;

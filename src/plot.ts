@@ -1,5 +1,5 @@
 import vis from "vis-timeline";
-import data from "./data";
+import { getNodes, getEdges } from "./data";
 var DELAY = 500; // delay in ms to add new data points
 
 export enum State {
@@ -71,11 +71,6 @@ var options = {
 
 var graph2d = new vis.Graph2d(container, dataset, groups, options);
 
-// a function to generate data points
-function y(x) {
-  return (Math.sin(x / 2) + Math.cos(x / 4)) * 5;
-}
-
 function renderStep() {
   // move the window (you can think of different strategies).
   var now = vis.moment();
@@ -115,17 +110,17 @@ function addDataPoint() {
   var now = vis.moment();
   dataset.add({
     x: now,
-    y: data.nodes.getIds().length,
+    y: getNodes().getIds().length,
     group: 0
   });
   dataset.add({
     x: now,
-    y: data.edges.getIds().length,
+    y: getEdges().getIds().length,
     group: 1
   });
   dataset.add({
     x: now,
-    y: data.nodes
+    y: getNodes()
       .get()
       .filter(node => node.group === State.IA || node.group === State.IR)
       .length,
@@ -133,7 +128,7 @@ function addDataPoint() {
   });
   dataset.add({
     x: now,
-    y: data.nodes
+    y: getNodes()
       .get()
       .filter(node => node.group === State.HS || node.group === State.HQ)
       .length,
