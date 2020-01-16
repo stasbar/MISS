@@ -7,7 +7,9 @@ import {
   reset,
   setData,
   getNodes,
-  getEdges
+  getEdges,
+  tic,
+  getClock
 } from "./data";
 import nodeEdges1000 from "./probdup/nodeEdge1000.json";
 
@@ -178,8 +180,6 @@ function buildNeighboursRatio(
   return neighboursRatio;
 }
 
-let currentCycle = 0;
-
 function spread(ignoreAuto: boolean) {
   console.log("spread");
   const xi = Number($("#xi").val());
@@ -213,7 +213,7 @@ function spread(ignoreAuto: boolean) {
         updateNode(node.id, State.HQ);
       }
     } else if (node.group === State.HQ) {
-      if (Math.random() <= 1 / Zhq && currentCycle < tau) {
+      if (Math.random() <= 1 / Zhq && getClock() < tau) {
         if (neighboursRatio[node.id] >= xi) {
           updateNode(node.id, State.IA);
         } else {
@@ -223,7 +223,7 @@ function spread(ignoreAuto: boolean) {
     }
   });
 
-  currentCycle++;
+  tic();
   if ($("#cbAutoSpread").prop("checked")) {
     if (neighboursRatio.some(ratio => ratio !== 1 && ratio !== 0)) {
       if (!ignoreAuto) {
@@ -268,7 +268,6 @@ $("#generate").click(() => {
   }
 });
 $("#reset").click(() => {
-  currentCycle = 0;
   reset();
 });
 const data = importNetwork(nodeEdges1000);

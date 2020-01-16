@@ -1,5 +1,5 @@
 import vis from "vis-timeline";
-import { getNodes, getEdges } from "./data";
+import { getNodes, getEdges, getClock, registerResetListener } from "./data";
 var DELAY = 500; // delay in ms to add new data points
 
 export enum State {
@@ -13,6 +13,12 @@ export enum State {
 var container = document.getElementById("visualization");
 var dataset = new vis.DataSet();
 var groups = new vis.DataSet();
+
+registerResetListener(() => {
+  console.log("Called cleanup");
+  dataset.clear();
+});
+
 groups.add({
   id: 0,
   content: "Nodes",
@@ -57,8 +63,8 @@ groups.add({
 });
 
 var options = {
-  start: vis.moment().add(-30, "seconds"), // changed so its faster
-  end: vis.moment(),
+  start: 0,
+  end: 100,
   legend: true,
   dataAxis: {
     left: {
@@ -73,7 +79,7 @@ var graph2d = new vis.Graph2d(container, dataset, groups, options);
 
 function renderStep() {
   // move the window (you can think of different strategies).
-  var now = vis.moment();
+  var now = getClock();
   var range = graph2d.getWindow();
   var interval = range.end - range.start;
   const strategy = "static";
@@ -107,7 +113,7 @@ renderStep();
  */
 function addDataPoint() {
   // add a new data point to the dataset
-  var now = vis.moment();
+  var now = getClock();
   dataset.add({
     x: now,
     y: getNodes().getIds().length,

@@ -2,6 +2,7 @@ import vis, { IdType } from "vis-network";
 import { moment } from "vis-timeline";
 import { interval } from "rxjs";
 import { countBy, chain } from "lodash";
+import { getCycle } from "./probdup";
 
 interface Data {
   nodes: vis.DataSet<any, "id">;
@@ -19,9 +20,18 @@ let data: Data = {
   edges: new vis.DataSet()
 };
 
+let clock = 0;
+export function tic() {
+  clock++;
+}
+export function getClock() {
+  return clock;
+}
+
 var expirationTime: moment.Moment = undefined;
 
 interval(1000).subscribe(updateExpirationTimer);
+interval(1000).subscribe(updateCycleCount);
 interval(1000).subscribe(updateGraphFeatures);
 
 export function getData(): Data {
@@ -41,10 +51,17 @@ export function clear() {
   data.nodes.clear();
   data.edges.clear();
 }
+const resetListeners: Array<() => any> = [];
+
+export function registerResetListener(listener: () => any) {
+  resetListeners.push(listener);
+}
 
 export function reset() {
+  clock = 0;
   const newNodes = data.nodes.getIds().map(id => ({ id, group: 0 }));
   data.nodes.update(newNodes);
+  resetListeners.forEach(listener => listener());
 }
 
 export function addNode(id: IdType, group: number = 0) {
@@ -86,6 +103,10 @@ function updateExpirationTimer() {
     document.getElementById("expiration-timer").textContent =
       "File expire " + expirationTime.fromNow();
   }
+}
+
+function updateCycleCount() {
+  document.getElementById("cycles").textContent = getClock();
 }
 
 function updateGraphFeatures() {
