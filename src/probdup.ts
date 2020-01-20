@@ -1,4 +1,11 @@
-﻿import vis from "vis-network";
+﻿// Problems:
+// 1) Lockup caused by blowballs,
+// 2) Whole topology knowledge is assumed for each node in order to achieve
+// randomness
+// My proposition, use directed trust, so that we won't be locked up by nodes
+// trusting us
+
+import vis from "vis-network";
 import {
   addNode,
   addEdge,
@@ -160,9 +167,11 @@ function buildAdjacentList(
     const fromAdjances = adjacentList.get(edge.from) || new Array<Node>();
     fromAdjances.push(nodes[edge.to]);
     adjacentList.set(edge.from, fromAdjances);
-    const toAdjances = adjacentList.get(edge.to) || new Array<Node>();
-    toAdjances.push(nodes[edge.from]);
-    adjacentList.set(edge.to, toAdjances);
+    if (!$("#cbDirected").prop("checked")) {
+      const toAdjances = adjacentList.get(edge.to) || new Array<Node>();
+      toAdjances.push(nodes[edge.from]);
+      adjacentList.set(edge.to, toAdjances);
+    }
   });
   return adjacentList;
 }
@@ -192,6 +201,7 @@ function spread(ignoreAuto: boolean) {
 
   const neighboursRatio: Array<Number> = buildNeighboursRatio(adjacentList);
   nodes.forEach(node => {
+    console.log({ neighboursRatio: neighboursRatio[node.id] });
     if (node.group === State.HS) {
       if (neighboursRatio[node.id] >= xi) {
         // More than epsilon of my neighbours are infected so do I

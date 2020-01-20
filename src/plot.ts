@@ -17,6 +17,10 @@ var groups = new vis.DataSet();
 registerResetListener(() => {
   console.log("Called cleanup");
   dataset.clear();
+  var now = getClock();
+  var range = graph2d.getWindow();
+  var interval = range.end - range.start;
+  graph2d.setWindow(now - 0.1 * interval, now + 0.9 * interval);
 });
 
 groups.add({
