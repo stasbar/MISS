@@ -18,7 +18,7 @@ import {
   tic,
   getClock
 } from "./data";
-import nodeEdges1000 from "./probdup/nodeEdge1000.json";
+import nodeEdges1000NoGrape from "./probdup/nodeEdge1000NoGrape.json";
 
 import { State } from "./plot";
 import { getNetwork } from "./network";
@@ -300,8 +300,13 @@ $("#dump").click(() => {
   exportNetwork(network);
 });
 
-$("#restore").click(() => {
-  const data = importNetwork(nodeEdges1000);
+$("#restore1000NoGrape").click(() => {
+  const data = importNetwork(nodeEdges1000NoGrape);
+  setData(data);
+});
+
+$("#restore1000").click(() => {
+  const data = importNetwork(nodeEdges1000NoGrape);
   setData(data);
 });
 

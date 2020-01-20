@@ -60,16 +60,17 @@ $("#cbPhysics").change(() => {
 });
 
 let allowUpdate = $("#cbUpdateNetwork").prop("checked");
-$("#cbUpdateNetwork").change(() => {
+$("#cbFollowUpdates").change(() => {
   allowUpdate = $("#cbUpdateNetwork").prop("checked");
 });
 
 $("#btnFetchNetwork").click(() => {
   console.log("fetch network");
 
-  data.edges = getEdges();
-  data.nodes = getNodes();
+  data.edges.update(getEdges().get());
+  data.nodes.update(getNodes().get());
   network = new vis.Network(networkContainer, data, options);
+  network.fit();
 });
 
 export function getNetwork() {
@@ -77,14 +78,20 @@ export function getNetwork() {
 }
 
 addOnDataSetListener(newData => {
+  if (!allowUpdate) {
+    return;
+  }
   data = newData;
-  network.redraw();
+  console.log("onDataSet");
+  network = new vis.Network(networkContainer, data, options);
+  network.fit();
 });
 
 addOnNodeChangeListener((event, node) => {
   if (!allowUpdate) {
     return;
   }
+  console.log("onNodeChange");
   if (event === "add") {
     data.nodes.add(node);
   } else if (event === "remove") {
@@ -98,6 +105,7 @@ addOnEdgeChangeListener((event, edge) => {
   if (!allowUpdate) {
     return;
   }
+  console.log("onEdgeChange");
   if (event === "add") {
     data.edges.add(edge);
   } else if (event === "remove") {
