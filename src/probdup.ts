@@ -75,8 +75,8 @@ async function generatePropDup(noNodes: number) {
     await delay(0.1);
     let from: number | string;
     let to: number | string;
-    let isAlreadyLink: boolean = true;
-    while (isAlreadyLink) {
+    let searching: boolean = true;
+    while (searching) {
       const availableNodes = getNodes().get();
       from = availableNodes.splice(
         Math.round(Math.random() * (availableNodes.length - 1)),
@@ -88,7 +88,7 @@ async function generatePropDup(noNodes: number) {
         1
       )[0].id;
 
-      isAlreadyLink = getEdges()
+      searching = getEdges()
         .get()
         .some(
           (edge: vis.Edge) =>
@@ -110,7 +110,7 @@ async function generatePropDup(noNodes: number) {
       pickedHost = Math.round(Math.random() * (availableNodes.length - 1));
     }
 
-    data.edges
+    getNodes()
       .get()
       .filter((edge: vis.Edge) => edge.from === pickedHost)
       .filter(() => Math.random() <= phi)
@@ -121,7 +121,7 @@ async function generatePropDup(noNodes: number) {
         addEdge(i, Number(edge.to));
       });
 
-    data.edges
+    getEdges()
       .get()
       .filter((edge: vis.Edge) => edge.to === pickedHost)
       .filter(() => Math.random() <= phi)
@@ -191,17 +191,17 @@ function buildNeighboursRatio(
 
 function spread(ignoreAuto: boolean) {
   console.log("spread");
+  tic();
   const xi = Number($("#xi").val());
   const Zia = Number($("#zia").val());
   const Zhq = Number($("#zhq").val());
   const tau = Number($("#tau").val());
-  const nodes: Node[] = data.nodes.get();
-  const edges: Edge[] = data.edges.get();
+  const nodes: Node[] = getNodes().get();
+  const edges: Edge[] = getEdges().get();
   const adjacentList: Map<Number, Node[]> = buildAdjacentList(nodes, edges);
 
   const neighboursRatio: Array<Number> = buildNeighboursRatio(adjacentList);
   nodes.forEach(node => {
-    console.log({ neighboursRatio: neighboursRatio[node.id] });
     if (node.group === State.HS) {
       if (neighboursRatio[node.id] >= xi) {
         // More than epsilon of my neighbours are infected so do I
@@ -233,21 +233,21 @@ function spread(ignoreAuto: boolean) {
     }
   });
 
-  tic();
   if ($("#cbAutoSpread").prop("checked")) {
     if (neighboursRatio.some(ratio => ratio !== 1 && ratio !== 0)) {
       if (!ignoreAuto) {
         setTimeout(spread, 100);
       }
-    } else if (!neighboursRatio.some(ratio => ratio !== 0)) {
-      alert("Extinction");
-      console.log("Extinction");
-      $("#cbAutoSpread").prop("checked", false);
-    } else {
-      alert("Epidemic");
-      console.log("Epidemic");
-      $("#cbAutoSpread").prop("checked", false);
     }
+  }
+  if (!neighboursRatio.some(ratio => ratio !== 0)) {
+    alert("Extinction");
+    console.log("Extinction");
+    $("#cbAutoSpread").prop("checked", false);
+  } else if (!neighboursRatio.some(ratio => ratio !== 1)) {
+    alert("Epidemic");
+    console.log("Epidemic");
+    $("#cbAutoSpread").prop("checked", false);
   }
 }
 
@@ -262,10 +262,9 @@ $("#publish").click(async () => {
   for (let i = 0; i < publishCount; i++) {
     publish();
     await delay(0.2);
-    spread(true);
+    spread(i === publishCount - 1 ? false : true);
     await delay(0.2);
   }
-  spread(false);
 });
 $("#spread").click(() => spread(false));
 $("#generate").click(() => {
@@ -280,5 +279,5 @@ $("#generate").click(() => {
 $("#reset").click(() => {
   reset();
 });
-const data = importNetwork(nodeEdges1000);
-setData(data);
+/* const data = importNetwork(nodeEdges1000); */
+/* setData(data); */

@@ -1,5 +1,5 @@
 import vis from "vis-network";
-import { getNodes, getEdges } from "./data";
+import { getNodes, getEdges, registerResetListener, getClock } from "./data";
 var DELAY = 2000; // delay in ms to add new data points
 
 var data = {
@@ -33,7 +33,7 @@ var options = {
     3: { color: { background: "#9fff69" } }
   },
   physics: {
-    enabled: false,
+    enabled: true,
     stabilization: false,
     forceAtlas2Based: {
       gravitationalConstant: -800,
@@ -52,9 +52,17 @@ const network = new vis.Network(networkContainer, data, options);
  * Add a new datapoint to the graph
  */
 function addDataPoint() {
+  const now = getClock();
+  console.log(`addDataPoint now: ${now}`);
   data.nodes.update(getNodes().get());
   data.edges.update(getEdges().get());
 
   setTimeout(addDataPoint, DELAY);
 }
 addDataPoint();
+
+registerResetListener(() => {
+  console.log("Called cleanup");
+  data.nodes.clear();
+  data.edges.clear();
+});

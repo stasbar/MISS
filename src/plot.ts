@@ -118,6 +118,7 @@ renderStep();
 function addDataPoint() {
   // add a new data point to the dataset
   var now = getClock();
+  console.log(`addDataPoint now: ${now}`);
   dataset.add({
     x: now,
     y: getNodes().getIds().length,
