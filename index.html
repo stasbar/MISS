@@ -31,7 +31,7 @@
             <input type="number" class="form-control" id="noNodes" value="100">
           </div>
 
-          <div class="form-group col-md-4">
+          <div class="form-group col-md-2">
             <legend class="col-form-label">Generation method</legend>
             <div class="form-check form-check-inline">
               <input class="form-check-input" type="radio" name="inlineRadioOptions" id="propDup" value="probdup" checked>
@@ -54,6 +54,14 @@
           <div class="form-group col-md-2">
             <label for="phi">φ: prob. of inheriting trust</label>
             <input type="number" class="form-control" id="phi" value="0.5" min="0.01" max="1">
+          </div>
+          <div class="form-group col-md-2">
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="checkbox" value="" id="cbPreventGrape">
+              <label class="form-check-label" for="cbPreventGrape">
+                Prevent grapeing
+              </label>
+            </div>
           </div>
         </div>
 
@@ -81,7 +89,7 @@
           </div>
           <div class="col-md-3">
             <label for="zia">Zia: Mean time in IA state</label>
-            <input type="number" class="form-control" id="zia" value="100">
+            <input type="number" class="form-control" id="zia" value="25">
           </div>
         </div>
 
@@ -100,7 +108,7 @@
             </label>
           </div>
           <div class="form-check form-check-inline">
-            <input class="form-check-input" type="checkbox" checked value="" id="cbDirected">
+            <input class="form-check-input" type="checkbox" value="" id="cbDirected">
             <label class="form-check-label" for="cbDirected">
               Directed
             </label>
@@ -111,8 +119,31 @@
       </form>
 
       <div class="row" id="container">
-        <div class="col-md-6" id="network"></div>
-        <div class="col-md-6" id="visualization"></div>
+          <div class="col-md-6" id="network"></div>
+          <div class="col-md-6" id="visualization"></div>
+      </div>
+      <div class="form-row form-group">
+        <div class="input-group-append">
+          <button class="btn btn-outline-primary" type="button" id="btnFetchNetwork">Fetch network</button>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" checked type="checkbox" value="" id="cbUpdateNetwork">
+          <label class="form-check-label" for="cbUpdateNetwork">
+            Allow Updates
+          </label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" checked type="checkbox" value="" id="cbSmooth">
+          <label class="form-check-label" for="cbSmooth">
+            Smooth
+          </label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" checked type="checkbox" value="" id="cbPhysics">
+          <label class="form-check-label" for="cbPhysics">
+            Physics
+          </label>
+        </div>
       </div>
       <h6 id="cycles"></h6>
       <h6 id="expiration-timer"></h6>

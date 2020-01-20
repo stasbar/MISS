@@ -2,7 +2,6 @@ import vis, { IdType } from "vis-network";
 import { moment } from "vis-timeline";
 import { interval } from "rxjs";
 import { countBy, chain } from "lodash";
-import { getCycle } from "./probdup";
 
 interface Data {
   nodes: vis.DataSet<any, "id">;
@@ -34,27 +33,37 @@ interval(1000).subscribe(updateExpirationTimer);
 interval(1000).subscribe(updateCycleCount);
 interval(1000).subscribe(updateGraphFeatures);
 
-export function getData(): Data {
-  return data;
+const resetListeners: Array<() => any> = [];
+export function registerResetListener(listener: () => any) {
+  resetListeners.push(listener);
 }
-export function getNodes(): vis.DataSet<any, "id"> {
-  return data.nodes;
-}
-export function getEdges(): vis.DataSet<any, "id"> {
-  return data.edges;
-}
-export function setData(newData: Data) {
-  data = newData;
-}
-
 export function clear() {
   data.nodes.clear();
   data.edges.clear();
+  resetListeners.forEach(listener => listener());
 }
-const resetListeners: Array<() => any> = [];
 
-export function registerResetListener(listener: () => any) {
-  resetListeners.push(listener);
+export function getData(): Data {
+  return data;
+}
+
+export function getNodes(): vis.DataSet<any, "id"> {
+  return data.nodes;
+}
+
+export function getEdges(): vis.DataSet<any, "id"> {
+  return data.edges;
+}
+
+const onDataSetListeeners: Array<(dataset: any) => any> = [];
+export function addOnDataSetListener(listener: (data) => any) {
+  onDataSetListeeners.push(listener);
+}
+
+export function setData(newData: Data) {
+  clear();
+  data = newData;
+  onDataSetListeeners.forEach(listener => listener(data));
 }
 
 export function reset() {
@@ -62,6 +71,13 @@ export function reset() {
   const newNodes = data.nodes.getIds().map(id => ({ id, group: 0 }));
   data.nodes.update(newNodes);
   resetListeners.forEach(listener => listener());
+}
+
+const onNodeChangeListeners: Array<(name: string, node: any) => any> = [];
+export function addOnNodeChangeListener(
+  listener: (name: string, node: any) => any
+) {
+  onNodeChangeListeners.push(listener);
 }
 
 export function addNode(id: IdType, group: number = 0) {
@@ -76,15 +92,27 @@ export function addNode(id: IdType, group: number = 0) {
   }
 
   data.nodes.add({ id, group, title: id });
+  onNodeChangeListeners.forEach(listener =>
+    listener("add", { id, group, title: id })
+  );
   expirationTime = expirationTime.add(4000, "ms");
 }
 
 export function updateNode(id: number | string | IdType, group: number) {
   data.nodes.update({ id, group });
+  onNodeChangeListeners.forEach(listener => listener("update", { id, group }));
 }
 
 export function removeNode(id: number | vis.IdType) {
   data.nodes.remove({ id });
+  onNodeChangeListeners.forEach(listener => listener("remove", { id }));
+}
+
+const onEdgeChangeListeners: Array<(name: string, edge: any) => any> = [];
+export function addOnEdgeChangeListener(
+  listener: (name: string, edge: any) => any
+) {
+  onEdgeChangeListeners.push(listener);
 }
 
 export function addEdge(
@@ -92,6 +120,7 @@ export function addEdge(
   to: number | string | IdType
 ) {
   data.edges.add({ from, to });
+  onEdgeChangeListeners.forEach(listener => listener("add", { from, to }));
 }
 
 export function isExtinct() {

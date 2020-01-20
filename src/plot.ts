@@ -119,17 +119,17 @@ function addDataPoint() {
   // add a new data point to the dataset
   var now = getClock();
   console.log(`addDataPoint now: ${now}`);
-  dataset.add({
+  dataset.update({
     x: now,
     y: getNodes().getIds().length,
     group: 0
   });
-  dataset.add({
+  dataset.update({
     x: now,
     y: getEdges().getIds().length,
     group: 1
   });
-  dataset.add({
+  dataset.update({
     x: now,
     y: getNodes()
       .get()
@@ -137,7 +137,7 @@ function addDataPoint() {
       .length,
     group: 2
   });
-  dataset.add({
+  dataset.update({
     x: now,
     y: getNodes()
       .get()

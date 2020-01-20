@@ -21,7 +21,7 @@ import {
 import nodeEdges1000 from "./probdup/nodeEdge1000.json";
 
 import { State } from "./plot";
-import "./network";
+import { getNetwork } from "./network";
 import { importNetwork, exportNetwork } from "./utils";
 
 async function delay(msec: number) {
@@ -100,37 +100,62 @@ async function generatePropDup(noNodes: number) {
     addEdge(from, to);
   }
 
-  const phi = Number($("#phi ").val());
+  const phi = Number($("#phi").val());
   for (let i: number = initNodes; i < noNodes; i++) {
-    await delay(0.01);
+    await delay(0.001);
     /* await delayIndex(i); */
     const availableNodes = getNodes().get();
     let pickedHost = Math.round(Math.random() * (availableNodes.length - 1));
-    while (pickedHost === i) {
-      pickedHost = Math.round(Math.random() * (availableNodes.length - 1));
-    }
 
-    getNodes()
+    const outEdges = getEdges()
       .get()
-      .filter((edge: vis.Edge) => edge.from === pickedHost)
+      .filter((edge: vis.Edge) => edge.from === pickedHost);
+    const inEdges = getEdges()
+      .get()
+      .filter((edge: vis.Edge) => edge.to === pickedHost);
+    let addedEdges = 0;
+    outEdges
       .filter(() => Math.random() <= phi)
       .forEach((edge: vis.Edge) => {
         if (i === edge.to) {
           throw new Error("Can not create self loop");
         }
         addEdge(i, Number(edge.to));
+        addedEdges++;
       });
 
-    getEdges()
-      .get()
-      .filter((edge: vis.Edge) => edge.to === pickedHost)
+    inEdges
       .filter(() => Math.random() <= phi)
       .forEach((edge: vis.Edge) => {
         if (i === edge.from) {
           throw new Error("Can not create self loop");
         }
         addEdge(i, Number(edge.from));
+        addedEdges++;
       });
+
+    if (addedEdges === 0 && $("#cbPreventGrape").prop("checked")) {
+      let randomNeighbour = 0;
+      if (Math.random() < 0.5 && outEdges.length > 0) {
+        const randomEdge =
+          outEdges[Math.round(Math.random() * (outEdges.length - 1))];
+        randomNeighbour = randomEdge.to;
+      } else if (inEdges.length > 0) {
+        const randomEdge =
+          inEdges[Math.round(Math.random() * (inEdges.length - 1))];
+        randomNeighbour = randomEdge.from;
+      } else {
+        const randomEdge =
+          outEdges[Math.round(Math.random() * (outEdges.length - 1))];
+        randomNeighbour = randomEdge.to;
+      }
+
+      if (i === randomNeighbour) {
+        throw new Error("Can not create self loop");
+      }
+      addEdge(i, Number(randomNeighbour));
+      addedEdges++;
+    }
 
     addNode(i, State.HS);
     addEdge(i, pickedHost);
@@ -189,13 +214,15 @@ function buildNeighboursRatio(
   return neighboursRatio;
 }
 
-function spread(ignoreAuto: boolean) {
+function spread() {
   console.log("spread");
   tic();
   const xi = Number($("#xi").val());
   const Zia = Number($("#zia").val());
   const Zhq = Number($("#zhq").val());
   const tau = Number($("#tau").val());
+  console.log({ xi, Zia, Zhq, tau });
+
   const nodes: Node[] = getNodes().get();
   const edges: Edge[] = getEdges().get();
   const adjacentList: Map<Number, Node[]> = buildAdjacentList(nodes, edges);
@@ -232,41 +259,68 @@ function spread(ignoreAuto: boolean) {
       }
     }
   });
+  checkBoundaryConditions();
+}
 
+async function startSpreading() {
   if ($("#cbAutoSpread").prop("checked")) {
-    if (neighboursRatio.some(ratio => ratio !== 1 && ratio !== 0)) {
-      if (!ignoreAuto) {
-        setTimeout(spread, 100);
-      }
+    while (!finished && $("#cbAutoSpread").prop("checked")) {
+      await delay(0.1);
+      spread();
     }
-  }
-  if (!neighboursRatio.some(ratio => ratio !== 0)) {
-    alert("Extinction");
-    console.log("Extinction");
-    $("#cbAutoSpread").prop("checked", false);
-  } else if (!neighboursRatio.some(ratio => ratio !== 1)) {
-    alert("Epidemic");
-    console.log("Epidemic");
-    $("#cbAutoSpread").prop("checked", false);
+  } else {
+    spread();
   }
 }
 
-$("#dump").click(() => exportNetwork(network));
+function checkBoundaryConditions() {
+  if (
+    !getNodes()
+      .get()
+      .some(node => node.group === State.IA || node.group === State.IR)
+  ) {
+    alert("Extinction");
+    console.log("Extinction");
+    $("#cbAutoSpread").prop("checked", false);
+    finished = true;
+  } else if (
+    !getNodes()
+      .get()
+      .some(node => node.group === State.HS || node.group === State.HQ)
+  ) {
+    alert("Epidemic");
+    console.log("Epidemic");
+    $("#cbAutoSpread").prop("checked", false);
+    finished = true;
+  }
+}
+
+$("#dump").click(() => {
+  const network = getNetwork();
+  exportNetwork(network);
+});
+
 $("#restore").click(() => {
   const data = importNetwork(nodeEdges1000);
   setData(data);
-  createNetwork(data);
 });
+
+let finished = true;
 $("#publish").click(async () => {
+  finished = false;
   const publishCount = Number($("#publishCount").val());
   for (let i = 0; i < publishCount; i++) {
-    publish();
-    await delay(0.2);
-    spread(i === publishCount - 1 ? false : true);
-    await delay(0.2);
+    if (!finished) {
+      await delay(0.2);
+      publish();
+    }
+    if (!finished) {
+      await delay(0.2);
+      spread();
+    }
   }
 });
-$("#spread").click(() => spread(false));
+$("#spread").click(() => startSpreading());
 $("#generate").click(() => {
   clear();
   const noNodes = Number($("#noNodes ").val());
@@ -277,6 +331,7 @@ $("#generate").click(() => {
   }
 });
 $("#reset").click(() => {
+  finished = true;
   reset();
 });
 /* const data = importNetwork(nodeEdges1000); */

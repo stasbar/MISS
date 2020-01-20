@@ -1,6 +1,12 @@
 import vis from "vis-network";
-import { getNodes, getEdges, registerResetListener, getClock } from "./data";
-var DELAY = 2000; // delay in ms to add new data points
+import {
+  registerResetListener as onReset,
+  addOnNodeChangeListener,
+  addOnEdgeChangeListener,
+  addOnDataSetListener,
+  getNodes,
+  getEdges
+} from "./data";
 
 var data = {
   nodes: new vis.DataSet(),
@@ -33,7 +39,7 @@ var options = {
     3: { color: { background: "#9fff69" } }
   },
   physics: {
-    enabled: true,
+    enabled: $("#cbPhysics").prop("checked"),
     stabilization: false,
     forceAtlas2Based: {
       gravitationalConstant: -800,
@@ -46,23 +52,62 @@ var options = {
 };
 
 const networkContainer = document.getElementById("network");
-const network = new vis.Network(networkContainer, data, options);
+let network = new vis.Network(networkContainer, data, options);
 
-/**
- * Add a new datapoint to the graph
- */
-function addDataPoint() {
-  const now = getClock();
-  console.log(`addDataPoint now: ${now}`);
-  data.nodes.update(getNodes().get());
-  data.edges.update(getEdges().get());
+$("#cbPhysics").change(() => {
+  const physics = $("#cbPhysics").prop("checked");
+  network.setOptions({ physics: { enabled: physics } });
+});
 
-  setTimeout(addDataPoint, DELAY);
+let allowUpdate = $("#cbUpdateNetwork").prop("checked");
+$("#cbUpdateNetwork").change(() => {
+  allowUpdate = $("#cbUpdateNetwork").prop("checked");
+});
+
+$("#btnFetchNetwork").click(() => {
+  console.log("fetch network");
+
+  data.edges = getEdges();
+  data.nodes = getNodes();
+  network = new vis.Network(networkContainer, data, options);
+});
+
+export function getNetwork() {
+  return network;
 }
-addDataPoint();
 
-registerResetListener(() => {
-  console.log("Called cleanup");
+addOnDataSetListener(newData => {
+  data = newData;
+  network.redraw();
+});
+
+addOnNodeChangeListener((event, node) => {
+  if (!allowUpdate) {
+    return;
+  }
+  if (event === "add") {
+    data.nodes.add(node);
+  } else if (event === "remove") {
+    data.nodes.remove(node);
+  } else if (event === "update") {
+    data.nodes.update(node);
+  }
+});
+
+addOnEdgeChangeListener((event, edge) => {
+  if (!allowUpdate) {
+    return;
+  }
+  if (event === "add") {
+    data.edges.add(edge);
+  } else if (event === "remove") {
+    data.edges.remove(edge);
+  } else if (event === "update") {
+    data.edges.update(edge);
+  }
+});
+
+onReset(() => {
   data.nodes.clear();
   data.edges.clear();
 });
