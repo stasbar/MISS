@@ -1,0 +1,13 @@
+.healthly {
+  fill: #00ea00;
+  fill-opacity: 0;
+  stroke-width: 2px;
+  stroke: #00ea00; 
+}
+
+.infected {
+  fill: #ea0000;
+  fill-opacity: 0;
+  stroke-width: 2px;
+  stroke: #ea0000; 
+}

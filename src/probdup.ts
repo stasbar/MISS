@@ -19,6 +19,7 @@ import {
   getClock
 } from "./data";
 import nodeEdges1000NoGrape from "./probdup/nodeEdge1000NoGrape.json";
+import nodeEdges1000 from "./probdup/nodeEdge1000.json";
 
 import { State } from "./plot";
 import { getNetwork } from "./network";
@@ -183,28 +184,23 @@ interface Edge {
   from: number;
   to: number;
 }
-function buildAdjacentList(
-  nodes: Node[],
-  edges: Edge[]
-): Map<Number, Array<Node>> {
-  const adjacentList = new Map<Number, Array<Node>>();
+function buildAdjacentList(nodes: Node[], edges: Edge[]): Array<Array<Node>> {
+  const adjacentList = new Array<Array<Node>>();
   edges.forEach(edge => {
-    const fromAdjances = adjacentList.get(edge.from) || new Array<Node>();
-    fromAdjances.push(nodes[edge.to]);
-    adjacentList.set(edge.from, fromAdjances);
+    const fromAdjances = adjacentList[Number(edge.from)] || new Array<Node>();
+    fromAdjances.push(nodes[Number(edge.to)]);
+    adjacentList[Number(edge.from)] = fromAdjances;
     if (!$("#cbDirected").prop("checked")) {
-      const toAdjances = adjacentList.get(edge.to) || new Array<Node>();
-      toAdjances.push(nodes[edge.from]);
-      adjacentList.set(edge.to, toAdjances);
+      const toAdjances = adjacentList[Number(edge.to)] || new Array<Node>();
+      toAdjances.push(nodes[Number(edge.from)]);
+      adjacentList[Number(edge.to)] = toAdjances;
     }
   });
   return adjacentList;
 }
 
-function buildNeighboursRatio(
-  adjacentList: Map<Number, Array<Node>>
-): Array<Number> {
-  const neighboursRatio = new Array<Number>(adjacentList.size);
+function buildNeighboursRatio(adjacentList: Array<Array<Node>>): Array<Number> {
+  const neighboursRatio = new Array<Number>(adjacentList.length);
   adjacentList.forEach((neighbours, nodeId) => {
     neighboursRatio[nodeId] =
       neighbours.filter(
@@ -215,7 +211,6 @@ function buildNeighboursRatio(
 }
 
 function spread() {
-  console.log("spread");
   tic();
   const xi = Number($("#xi").val());
   const Zia = Number($("#zia").val());
@@ -225,9 +220,10 @@ function spread() {
 
   const nodes: Node[] = getNodes().get();
   const edges: Edge[] = getEdges().get();
-  const adjacentList: Map<Number, Node[]> = buildAdjacentList(nodes, edges);
-
+  const adjacentList: Array<Node[]> = buildAdjacentList(nodes, edges);
   const neighboursRatio: Array<Number> = buildNeighboursRatio(adjacentList);
+  window.adjacentList = adjacentList;
+  window.neighboursRatio = neighboursRatio;
   nodes.forEach(node => {
     if (node.group === State.HS) {
       if (neighboursRatio[node.id] >= xi) {
@@ -306,7 +302,7 @@ $("#restore1000NoGrape").click(() => {
 });
 
 $("#restore1000").click(() => {
-  const data = importNetwork(nodeEdges1000NoGrape);
+  const data = importNetwork(nodeEdges1000);
   setData(data);
 });
 

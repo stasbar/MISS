@@ -1,5 +1,7 @@
 import vis from "vis-timeline";
 import { getNodes, getEdges, getClock, registerResetListener } from "./data";
+import "./plot.css";
+
 var DELAY = 500; // delay in ms to add new data points
 
 export enum State {
@@ -49,6 +51,7 @@ groups.add({
 groups.add({
   id: 2,
   content: "Infected",
+  className: "infected",
   options: {
     drawPoints: {
       style: "square" // square, circle
@@ -59,6 +62,7 @@ groups.add({
 groups.add({
   id: 3,
   content: "Healthly",
+  className: "healthly",
   options: {
     drawPoints: {
       style: "square" // square, circle
@@ -118,7 +122,6 @@ renderStep();
 function addDataPoint() {
   // add a new data point to the dataset
   var now = getClock();
-  console.log(`addDataPoint now: ${now}`);
   dataset.update({
     x: now,
     y: getNodes().getIds().length,
