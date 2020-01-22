@@ -42,7 +42,7 @@ function getNodeData(data: NodeEdge[]) {
 
   data.forEach(elem => {
     networkNodes.push({
-      id: elem.id,
+      id: Number(elem.id),
       title: elem.id,
       x: elem.x,
       y: elem.y,
@@ -59,7 +59,7 @@ function getEdgeData(data: NodeEdge[]) {
   data.forEach((node: NodeEdge) => {
     // add the connection
     node.connections.forEach(connId => {
-      networkEdges.push({ from: node.id, to: connId });
+      networkEdges.push({ from: Number(node.id), to: Number(connId) });
       let cNode = getNodeById(data, connId);
 
       var elementConnections = cNode.connections;

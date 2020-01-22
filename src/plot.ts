@@ -1,15 +1,14 @@
 import vis from "vis-timeline";
-import { getNodes, getEdges, getClock, registerResetListener } from "./data";
+import {
+  State,
+  getNodes,
+  getEdges,
+  getClock,
+  registerResetListener
+} from "./data";
 import "./plot.css";
 
 var DELAY = 500; // delay in ms to add new data points
-
-export enum State {
-  HS, //Health Susceptible initial state
-  IA, //Infected Acute when infected by EIP
-  IR, // Infected Recoverable - when all neighbours are infected
-  HQ // Healthly Quarantine - healed, can stay here forever if stayed long enough
-}
 
 // create a graph2d with an (currently empty) dataset
 var container = document.getElementById("visualization");

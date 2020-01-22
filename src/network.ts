@@ -38,6 +38,9 @@ var options = {
     2: { color: { background: "#fff769" } },
     3: { color: { background: "#9fff69" } }
   },
+  layout: {
+    improvedLayout: false
+  },
   physics: {
     enabled: $("#cbPhysics").prop("checked"),
     stabilization: false,

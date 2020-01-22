@@ -3,9 +3,28 @@ import { moment } from "vis-timeline";
 import { interval } from "rxjs";
 import { countBy, chain } from "lodash";
 
+export enum State {
+  HS, //Health Susceptible initial state
+  IA, //Infected Acute when infected by EIP
+  IR, // Infected Recoverable - when all neighbours are infected
+  HQ // Healthly Quarantine - healed, can stay here forever if stayed long enough
+}
+
+export interface Node {
+  id: number;
+  group: number;
+}
+
+export interface Edge {
+  id: number;
+  from: number;
+  to: number;
+}
+
 interface Data {
-  nodes: vis.DataSet<any, "id">;
-  edges: vis.DataSet<any, "id">;
+  nodes: vis.DataSet<Node, "id">;
+  edges: vis.DataSet<Edge, "id">;
+  adjacentList?: number[][];
 }
 moment.updateLocale("en", {
   relativeTime: {
@@ -16,7 +35,8 @@ moment.updateLocale("en", {
 console.log("Evalutated data.ts");
 let data: Data = {
   nodes: new vis.DataSet(),
-  edges: new vis.DataSet()
+  edges: new vis.DataSet(),
+  adjacentList: undefined
 };
 
 let clock = 0;
@@ -40,6 +60,7 @@ export function registerResetListener(listener: () => any) {
 export function clear() {
   data.nodes.clear();
   data.edges.clear();
+  data.adjacentList = undefined;
   resetListeners.forEach(listener => listener());
 }
 
@@ -63,7 +84,36 @@ export function addOnDataSetListener(listener: (data) => any) {
 export function setData(newData: Data) {
   clear();
   data = newData;
+  buildAdjacentList();
   onDataSetListeeners.forEach(listener => listener(data));
+}
+
+export function buildAdjacentList() {
+  const adjacentList = new Array<Array<number>>();
+  getEdges().forEach(edge => {
+    const fromAdjances = adjacentList[Number(edge.from)] || new Array<number>();
+    fromAdjances.push(Number(edge.to));
+    adjacentList[Number(edge.from)] = fromAdjances;
+    if (!$("#cbDirected").prop("checked")) {
+      const toAdjances = adjacentList[Number(edge.to)] || new Array<number>();
+      toAdjances.push(Number(edge.from));
+      adjacentList[Number(edge.to)] = toAdjances;
+    }
+  });
+  data.adjacentList = adjacentList;
+  window.adjacentList = adjacentList;
+}
+
+export function calculateNeighbourRatioFor(nodeId: number): number {
+  const adjacents = data.adjacentList[nodeId];
+  const ratio =
+    adjacents.filter(
+      neighbour =>
+        data.nodes.get(neighbour).group === State.IA ||
+        data.nodes.get(neighbour).group === State.IR
+    ).length / adjacents.length;
+
+  return ratio;
 }
 
 export function reset() {
