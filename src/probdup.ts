@@ -5,6 +5,9 @@
 // My proposition, use directed trust, so that we won't be locked up by nodes
 // trusting us
 
+// Can EIP infect HQ or only HS ?
+// How do you measure epidemic ? All IA or IR ?
+
 import vis from "vis-network";
 import {
   addNode,
@@ -165,15 +168,18 @@ async function generatePropDup(noNodes: number) {
 
 function publish() {
   console.log("publish");
-  const availableNodes = getNodes().get();
-  const pickedHost = availableNodes.find(
-    node => node.group === State.HS || node.group === State.HQ
-  );
-  if (pickedHost) {
-    updateNode(pickedHost.id, State.IA);
-  } else {
+  const availableNodes = getNodes()
+    .get()
+    .filter(node => node.group === State.HS || node.group === State.HQ);
+
+  if (availableNodes.length === 0) {
     console.error("Could not find healthly node");
+    return;
   }
+  const pickedHost =
+    availableNodes[Math.round(Math.random() * (availableNodes.length - 1))];
+  updateNode(pickedHost.id, State.IA);
+  console.log(`infecting: ${pickedHost.id}`);
 }
 
 interface Node {
@@ -216,7 +222,6 @@ function spread() {
   const Zia = Number($("#zia").val());
   const Zhq = Number($("#zhq").val());
   const tau = Number($("#tau").val());
-  console.log({ xi, Zia, Zhq, tau });
 
   const nodes: Node[] = getNodes().get();
   const edges: Edge[] = getEdges().get();

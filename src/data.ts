@@ -81,21 +81,10 @@ export function addOnNodeChangeListener(
 }
 
 export function addNode(id: IdType, group: number = 0) {
-  if (expirationTime && moment().isAfter(expirationTime)) {
-    console.error("Can not add node, file expired");
-    console.log({ now: moment(), extendedTo: expirationTime });
-    return;
-  }
-
-  if (!expirationTime) {
-    expirationTime = moment();
-  }
-
   data.nodes.add({ id, group, title: id });
   onNodeChangeListeners.forEach(listener =>
     listener("add", { id, group, title: id })
   );
-  expirationTime = expirationTime.add(4000, "ms");
 }
 
 export function updateNode(id: number | string | IdType, group: number) {

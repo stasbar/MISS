@@ -59,11 +59,6 @@ $("#cbPhysics").change(() => {
   network.setOptions({ physics: { enabled: physics } });
 });
 
-let allowUpdate = $("#cbUpdateNetwork").prop("checked");
-$("#cbFollowUpdates").change(() => {
-  allowUpdate = $("#cbUpdateNetwork").prop("checked");
-});
-
 $("#btnFetchNetwork").click(() => {
   console.log("fetch network");
 
@@ -78,7 +73,7 @@ export function getNetwork() {
 }
 
 addOnDataSetListener(newData => {
-  if (!allowUpdate) {
+  if (!$("#cbFollowUpdates").prop("checked")) {
     return;
   }
   data = newData;
@@ -88,7 +83,7 @@ addOnDataSetListener(newData => {
 });
 
 addOnNodeChangeListener((event, node) => {
-  if (!allowUpdate) {
+  if (!$("#cbFollowUpdates").prop("checked")) {
     return;
   }
   console.log("onNodeChange");
@@ -102,7 +97,7 @@ addOnNodeChangeListener((event, node) => {
 });
 
 addOnEdgeChangeListener((event, edge) => {
-  if (!allowUpdate) {
+  if (!$("#cbFollowUpdates").prop("checked")) {
     return;
   }
   console.log("onEdgeChange");
