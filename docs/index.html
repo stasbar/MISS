@@ -15,7 +15,7 @@
   height: 400px;
   border: 1px solid lightgray;
 }</style>
-  <link rel="stylesheet" href="/main.9a7cfb7e.css"></head>
+  <link rel="stylesheet" href="/main.974025fe.css"></head>
 
   <body>
     <div class="container-fluid">
@@ -64,7 +64,8 @@
         <div class="form-row form-group">
           <div class="btn-group" role="group" aria-label="Basic example">
             <button type="button" class="btn btn-secondary" id="generate">Generate</button>
-            <button type="button" class="btn btn-light" id="restore">Restore</button>
+            <button type="button" class="btn btn-light" id="restore1000">Restore 1000 nodes</button>
+            <button type="button" class="btn btn-light" id="restore1000NoGrape">Restore 1000 nodes w/o grape</button>
             <button type="button" class="btn btn-light" id="dump">Dump</button>
           </div>
         </div>
@@ -77,7 +78,7 @@
           </div>
           <div class="col-md-3">
             <label for="tau">τ(tau): Time to immunization</label>
-            <input type="number" class="form-control" id="tau" value="100" max="1000" min="1" step="1">
+            <input type="number" class="form-control" id="tau" value="200" max="1000" min="1" step="1">
           </div>
           <div class="col-md-3">
             <label for="zhq">Zhq: Mean time in HQ state</label>
@@ -85,7 +86,7 @@
           </div>
           <div class="col-md-3">
             <label for="zia">Zia: Mean time in IA state</label>
-            <input type="number" class="form-control" id="zia" value="25">
+            <input type="number" class="form-control" id="zia" value="100">
           </div>
         </div>
 
@@ -118,20 +119,14 @@
           <div class="col-md-6" id="network"></div>
           <div class="col-md-6" id="visualization"></div>
       </div>
-      <div class="form-row form-group">
+      <div class="my-3 form-row form-group">
         <div class="input-group-append">
           <button class="btn btn-outline-primary" type="button" id="btnFetchNetwork">Fetch network</button>
         </div>
         <div class="form-check form-check-inline">
-          <input class="form-check-input" checked="" type="checkbox" value="" id="cbUpdateNetwork">
-          <label class="form-check-label" for="cbUpdateNetwork">
-            Allow Updates
-          </label>
-        </div>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" checked="" type="checkbox" value="" id="cbSmooth">
-          <label class="form-check-label" for="cbSmooth">
-            Smooth
+          <input class="form-check-input" checked="" type="checkbox" value="" id="cbFollowUpdates">
+          <label class="form-check-label" for="cbFollowUpdates">
+            Folllow Updates
           </label>
         </div>
         <div class="form-check form-check-inline">
@@ -147,7 +142,7 @@
       <h6 id="max-out-degree"></h6>
     </div>
 
-    <script src="/main.fc3cb322.js"></script>
+    <script src="/main.4c6586b9.js"></script>
 
   </body>
 </html>
