@@ -2,10 +2,30 @@
 
 How to prevent infection caused by stolen private key.
 
-## Simulation screen
+![State machine](images/machine-state.jpg)
+
+## Visual Simulation
 
 ![Simulation Screen](images/simulation1.jpg)
 
+visit [masti.stasbar.com](https://masti.stasbar.com)
+
+## Fast command line simulation
+
+Execute
+`npm run simulate`
+
+Options:
+--in - input network json file path
+--publications - number of external infection EIP publications
+--xi - min. proportion of infected neighbours
+--tau - time to immunization
+--zhq - Mean time in Healthly-Quarantine (HQ) state
+--zia - Mean time in Infected-Acute (IA) state
+--iterations - Number of process iterations - higher number - more accurate results
+
+Example:
+`npm run simulate -- in=src/probdup/nodeEdge1000.json --publications=20 --xi=0.3`
 
 ```uml
 Author->Author: Create and publish file
