@@ -1,4 +1,4 @@
-# MISS
+# MASTI
 
 How to prevent infection caused by stolen private key.
 
@@ -29,6 +29,8 @@ Options:
 Example:
 
 `npm run simulate -- in=src/probdup/nodeEdge1000.json --publications=20 --xi=0.3`
+
+## Smart contract
 
 ```uml
 Author->Author: Create and publish file
