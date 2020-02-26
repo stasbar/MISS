@@ -3,8 +3,10 @@ import { shuffle } from "lodash";
 
 export class Environment {
   finished: boolean;
-  clock: number;
+  clock: number = 0;
   data: Data;
+  extinction:boolean = false;
+  epidemic:boolean = false;
 
   constructor(data: Data) {
     this.finished = true;
@@ -13,6 +15,9 @@ export class Environment {
 
   reset() {
     this.clock = 0;
+    this.finished = false;
+    this.extinction = false;
+    this.epidemic = false;
     this.data.nodes.forEach(
       (_, id) => (this.data.nodes[id] = { ...this.data.nodes[id], group: 0 })
     );
@@ -21,27 +26,28 @@ export class Environment {
   start(
     publishCount: number,
     xi: number,
-    Zia: number,
+    tau: number,
     Zhq: number,
-    tau: number
+    Zia: number
   ) {
     this.finished = false;
+    this.extinction = false;
+    this.epidemic = false;
     for (let i = 0; i < publishCount; i++) {
       if (!this.finished) {
         this.publish(this.data);
       }
       if (!this.finished) {
         this.clock++;
-        this.spread(this.data, xi, Zia, Zhq, tau, this.clock);
+        this.spread(this.data, xi, Zia, Zhq, tau);
       }
     }
     while (!this.finished) {
       this.clock++;
-      this.spread(this.data, xi, Zia, Zhq, tau, this.clock++);
+      this.spread(this.data, xi, Zia, Zhq, tau);
     }
   }
   publish(data: Data) {
-    console.log("publish");
     const availableNodes = data.nodes.filter(
       node => node.group === State.HS || node.group === State.HQ
     );
@@ -53,7 +59,6 @@ export class Environment {
     const pickedHost =
       availableNodes[Math.round(Math.random() * (availableNodes.length - 1))];
     data.updateNode(pickedHost.id, State.IA);
-    console.log(`infecting: ${pickedHost.id}`);
   }
 
   spread(
@@ -62,7 +67,6 @@ export class Environment {
     Zia: number,
     Zhq: number,
     tau: number,
-    clock: number
   ) {
     let indexes = new Array(data.nodes.length);
     for (let index = 0; index < indexes.length; index++) indexes[index] = index;
@@ -92,7 +96,7 @@ export class Environment {
           data.updateNode(node.id, State.HQ);
         }
       } else if (node.group === State.HQ) {
-        if (Math.random() <= 1 / Zhq && clock < tau) {
+        if (Math.random() <= 1 / Zhq && this.clock < tau) {
           if (neighbourRatio >= xi) {
             data.updateNode(node.id, State.IA);
           } else {
@@ -122,19 +126,23 @@ export class Environment {
     const isEpidemic = !data.nodes.some(
       node => node.group === State.HS || node.group === State.HQ
     );
-    console.log(
-      `Infected/Healthly: ${(data.nodes.filter(Environment.isInfected).length /
-        data.nodes.length) *
-        100}/${(data.nodes.filter(Environment.isHealthly).length /
-        data.nodes.length) *
-        100}`
-    );
+    /* console.log( */
+    /*   `Infected/Healthly: ${(data.nodes.filter(Environment.isInfected).length / */
+    /*     data.nodes.length) * */
+    /*     100}/${(data.nodes.filter(Environment.isHealthly).length / */
+    /*     data.nodes.length) * */
+    /*     100}` */
+    /* ); */
     if (isExtinction) {
-      console.log("Extinction");
+      console.log(`Extinction at cycle ${this.clock}`);
       this.finished = true;
+      this.extinction = true;
+      this.epidemic = false;
     } else if (isEpidemic) {
-      console.log("Epidemic");
+      console.log(`Epidemic at cycle ${this.clock}`);
       this.finished = true;
+      this.epidemic = true;
+      this.extinction = false;
     }
   }
 

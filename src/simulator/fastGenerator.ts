@@ -23,7 +23,7 @@ export function generateRandom(noNodes: number): Data {
     data.addEdge(to, from);
   }
 
-  data.buildAdjacentList(false);
+  data.buildAdjacentList();
   return data;
 }
 
@@ -118,6 +118,6 @@ export function generatePropDup(
     data.addNode(i, State.HS);
     data.addEdge(i, pickedHost);
   }
-  data.buildAdjacentList(false);
+  data.buildAdjacentList();
   return data;
 }

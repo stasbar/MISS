@@ -38,7 +38,9 @@ export function exportNetwork(network: vis.Network) {
 export function importNetwork(inputData: NodeEdge[]) {
   console.log("restore");
   /* var inputData: NodeEdge[] = JSON.parse(inputValue); */
-  return new Data(getNodeData(inputData), getEdgeData(inputData));
+  const data = new Data(getNodeData(inputData), getEdgeData(inputData));
+  data.buildAdjacentList()
+  return data
 }
 
 function getNodeData(data: NodeEdge[]): Array<ImportedNode> {
@@ -53,6 +55,7 @@ function getNodeData(data: NodeEdge[]): Array<ImportedNode> {
       group: 0
     });
   });
+  console.log(`restored ${networkNodes.length} nodes`)
 
   return networkNodes;
 }
@@ -80,6 +83,7 @@ function getEdgeData(data: NodeEdge[]) {
     });
   });
 
+  console.log(`restored ${networkEdges.size} edges`)
   return networkEdges;
 }
 

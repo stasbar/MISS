@@ -52,7 +52,7 @@ export class Data implements DataType {
     const id = uuidv4();
     this.edges.set(id,{ id, from, to });
   }
-  buildAdjacentList(directed: boolean) {
+  buildAdjacentList(directed: boolean = false) {
     const adjacentList = new Array<Array<number>>();
     this.edges.forEach((edge: Edge) => {
       const fromAdjances =
