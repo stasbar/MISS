@@ -5,25 +5,32 @@
   "main": "index.html",
   "scripts": {
     "start": "parcel index.html --open",
+    "simulate": "ts-node ./src/simulator/simulator.ts",
     "build": "parcel build index.html --out-dir docs --no-minify"
   },
   "dependencies": {
     "@types/jquery": "^3.3.31",
     "@types/lodash": "^4.14.149",
+    "@types/node": "^13.7.4",
+    "@types/uuid": "^7.0.0",
     "bootstrap": "^4.4.1",
     "jquery": "^3.4.1",
     "lodash": "^4.17.15",
     "popper.js": "^1.16.0",
     "rxjs": "^6.5.3",
+    "uuid": "^7.0.1",
     "vis-network": "6.4.6",
-    "vis-timeline": "6.2.10"
+    "vis-timeline": "6.2.10",
+    "yargs": "^15.1.0"
   },
   "devDependencies": {
     "@fortawesome/fontawesome-free": "^5.12.0",
+    "@types/yargs": "^15.0.3",
     "@typescript-eslint/eslint-plugin": "^2.11.0",
     "@typescript-eslint/parser": "^2.11.0",
     "eslint": "^6.7.2",
     "parcel-bundler": "^1.12.4",
+    "ts-node": "^8.6.2",
     "typescript": "^3.7.3"
   },
   "keywords": []

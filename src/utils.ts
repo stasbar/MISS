@@ -1,9 +1,19 @@
 import vis, { IdType, Position } from "vis-network";
+import { Data, Edge } from "./simulator/fast-data";
+import { v4 as uuidv4 } from "uuid";
 interface NodeEdge {
   x: number;
   y: number;
   id: string;
-  connections: Array<IdType>;
+  connections: Array<IdType | { fromId: IdType; toId: IdType }>;
+}
+
+interface ImportedNode {
+  id: number;
+  title: string;
+  x: number;
+  y: number;
+  group: number;
 }
 
 function objectToArray(obj: { [nodeId: string]: Position }) {
@@ -27,18 +37,12 @@ export function exportNetwork(network: vis.Network) {
 
 export function importNetwork(inputData: NodeEdge[]) {
   console.log("restore");
-
   /* var inputData: NodeEdge[] = JSON.parse(inputValue); */
-
-  var data = {
-    nodes: getNodeData(inputData),
-    edges: getEdgeData(inputData)
-  };
-  return data;
+  return new Data(getNodeData(inputData), getEdgeData(inputData));
 }
 
-function getNodeData(data: NodeEdge[]) {
-  var networkNodes = [];
+function getNodeData(data: NodeEdge[]): Array<ImportedNode> {
+  var networkNodes = new Array<ImportedNode>();
 
   data.forEach(elem => {
     networkNodes.push({
@@ -50,16 +54,17 @@ function getNodeData(data: NodeEdge[]) {
     });
   });
 
-  return new vis.DataSet(networkNodes);
+  return networkNodes;
 }
 
 function getEdgeData(data: NodeEdge[]) {
-  var networkEdges = [];
+  var networkEdges: Map<string, Edge> = new Map<string, Edge>();
 
   data.forEach((node: NodeEdge) => {
     // add the connection
     node.connections.forEach(connId => {
-      networkEdges.push({ from: Number(node.id), to: Number(connId) });
+      const id = uuidv4();
+      networkEdges.set(id, { id, from: Number(node.id), to: Number(connId) });
       let cNode = getNodeById(data, connId);
 
       var elementConnections = cNode.connections;
@@ -75,10 +80,13 @@ function getEdgeData(data: NodeEdge[]) {
     });
   });
 
-  return new vis.DataSet(networkEdges);
+  return networkEdges;
 }
 
-function getNodeById(data: NodeEdge[], id: IdType) {
+function getNodeById(
+  data: NodeEdge[],
+  id: IdType | { fromId: IdType; toId: IdType }
+) {
   for (var n = 0; n < data.length; n++) {
     if (data[n].id == id) {
       // double equals since id can be numeric or string

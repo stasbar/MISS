@@ -2,21 +2,15 @@ import vis, { IdType } from "vis-network";
 import { moment } from "vis-timeline";
 import { interval } from "rxjs";
 import { countBy, chain } from "lodash";
-
-export enum State {
-  HS, //Health Susceptible initial state
-  IA, //Infected Acute when infected by EIP
-  IR, // Infected Recoverable - when all neighbours are infected
-  HQ // Healthly Quarantine - healed, can stay here forever if stayed long enough
-}
+import { State } from "./simulator/fast-data"
 
 export interface Node {
-  id: number;
+  id: IdType;
   group: number;
 }
 
 export interface Edge {
-  id: number;
+  id: IdType;
   from: number;
   to: number;
 }
@@ -26,6 +20,7 @@ interface Data {
   edges: vis.DataSet<Edge, "id">;
   adjacentList?: number[][];
 }
+
 moment.updateLocale("en", {
   relativeTime: {
     s: "%d seconds"
@@ -43,6 +38,7 @@ let clock = 0;
 export function tic() {
   clock++;
 }
+
 export function getClock() {
   return clock;
 }
@@ -130,21 +126,16 @@ export function addOnNodeChangeListener(
   onNodeChangeListeners.push(listener);
 }
 
-export function addNode(id: IdType, group: number = 0) {
+export function addNode(id: number, group: number = 0) {
   data.nodes.add({ id, group, title: id });
   onNodeChangeListeners.forEach(listener =>
     listener("add", { id, group, title: id })
   );
 }
 
-export function updateNode(id: number | string | IdType, group: number) {
+export function updateNode(id: number, group: number) {
   data.nodes.update({ id, group });
   onNodeChangeListeners.forEach(listener => listener("update", { id, group }));
-}
-
-export function removeNode(id: number | vis.IdType) {
-  data.nodes.remove({ id });
-  onNodeChangeListeners.forEach(listener => listener("remove", { id }));
 }
 
 const onEdgeChangeListeners: Array<(name: string, edge: any) => any> = [];
@@ -155,10 +146,10 @@ export function addOnEdgeChangeListener(
 }
 
 export function addEdge(
-  from: number | string | IdType,
-  to: number | string | IdType
+  from: number,
+  to: number
 ) {
-  data.edges.add({ from, to });
+  data.edges.add({ id: Number("${from}${to}") , from, to });
   onEdgeChangeListeners.forEach(listener => listener("add", { from, to }));
 }
 
