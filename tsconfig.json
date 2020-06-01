@@ -6,6 +6,7 @@
     "sourceMap": true,
     "resolveJsonModule": true,
     "allowJs": true,
+    "target": "esnext",
     "lib": ["es6", "dom"],
     "rootDir": "src",
     "moduleResolution": "node"
