@@ -6,6 +6,7 @@
   "scripts": {
     "start": "parcel index.html --open",
     "simulate": "ts-node ./src/simulator/simulator.ts",
+    "simulate-1000": "ts-node ./src/simulator/simulator.ts --in=./src/probdup/nodeEdge1000.json --iterations=1000 --all",
     "build": "parcel build index.html --out-dir docs --no-minify"
   },
   "dependencies": {
@@ -14,6 +15,7 @@
     "@types/node": "^13.7.4",
     "@types/uuid": "^7.0.0",
     "bootstrap": "^4.4.1",
+    "chalk": "^3.0.0",
     "jquery": "^3.4.1",
     "lodash": "^4.17.15",
     "popper.js": "^1.16.0",

@@ -1,5 +1,6 @@
 import { Data, State, Node } from "./fast-data";
 import { shuffle } from "lodash";
+import chalk from 'chalk';
 
 export class Environment {
   finished: boolean;
@@ -134,12 +135,12 @@ export class Environment {
     /*     100}` */
     /* ); */
     if (isExtinction) {
-      console.log(`Extinction at cycle ${this.clock}`);
+      process.stdout.write(chalk.green(`${'█'.repeat(Math.ceil(this.clock/10))}`));
       this.finished = true;
       this.extinction = true;
       this.epidemic = false;
     } else if (isEpidemic) {
-      console.log(`Epidemic at cycle ${this.clock}`);
+      process.stdout.write(chalk.red(`${'█'.repeat(Math.ceil(this.clock/10))}`));
       this.finished = true;
       this.epidemic = true;
       this.extinction = false;
