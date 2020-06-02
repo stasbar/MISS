@@ -4,11 +4,8 @@ import nodeEdges1000 from "./probdup/nodeEdge1000.json";
 import { getNetwork } from "./network";
 import { importNetwork, exportNetwork } from "./utils";
 import {
-  Node,
-  Edge,
   setData,
   clear,
-  State,
   addNode,
   addEdge,
   getNodes,
@@ -16,6 +13,9 @@ import {
   buildAdjacentList
 } from "./data";
 
+import {
+  State, Node, Edge
+} from "./simulator/fast-data"
 async function delay(msec: number) {
   return new Promise(resolve => setTimeout(resolve, msec * 1000));
 }
@@ -67,8 +67,8 @@ export async function generatePropDup(noNodes: number) {
   //Fill with random edges
   for (let i = 0; i < initEdges - initNodes + 1; i++) {
     await delay(0.1);
-    let from: number | string;
-    let to: number | string;
+    let from: number;
+    let to: number;
     let searching: boolean = true;
     while (searching) {
       const availableNodes = getNodes().get();

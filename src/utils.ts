@@ -35,7 +35,7 @@ export function exportNetwork(network: vis.Network) {
   console.log(exportValue);
 }
 
-export function importNetwork(inputData: NodeEdge[]) {
+export function importNetwork(inputData: NodeEdge[]): Data {
   console.log("restore");
   /* var inputData: NodeEdge[] = JSON.parse(inputValue); */
   const data = new Data(getNodeData(inputData), getEdgeData(inputData));

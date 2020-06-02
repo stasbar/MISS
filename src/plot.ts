@@ -1,12 +1,12 @@
 import vis from "vis-timeline";
 import {
-  State,
   getNodes,
   getEdges,
   getClock,
   registerResetListener
 } from "./data";
 import "./plot.css";
+import { State } from "./simulator/fast-data"
 
 var DELAY = 500; // delay in ms to add new data points
 

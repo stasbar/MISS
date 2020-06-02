@@ -2,21 +2,12 @@ import vis, { IdType } from "vis-network";
 import { moment } from "vis-timeline";
 import { interval } from "rxjs";
 import { countBy, chain } from "lodash";
-import { State } from "./simulator/fast-data"
+import { State, Node, Edge } from "./simulator/fast-data"
+import { v4 as uuidv4 } from "uuid";
 
-export interface Node {
-  id: IdType;
-  group: number;
-}
-
-export interface Edge {
-  id: IdType;
-  from: number;
-  to: number;
-}
-
+interface UINode extends Node { title: number }
 interface Data {
-  nodes: vis.DataSet<Node, "id">;
+  nodes: vis.DataSet<UINode, "id">;
   edges: vis.DataSet<Edge, "id">;
   adjacentList?: number[][];
 }
@@ -114,7 +105,7 @@ export function calculateNeighbourRatioFor(nodeId: number): number {
 
 export function reset() {
   clock = 0;
-  const newNodes = data.nodes.getIds().map(id => ({ id, group: 0 }));
+  const newNodes = data.nodes.getIds().map(id => ({ id: Number(id), group: 0 }));
   data.nodes.update(newNodes);
   resetListeners.forEach(listener => listener());
 }
@@ -149,7 +140,7 @@ export function addEdge(
   from: number,
   to: number
 ) {
-  data.edges.add({ id: Number("${from}${to}") , from, to });
+  data.edges.add({ id: uuidv4(), from, to });
   onEdgeChangeListeners.forEach(listener => listener("add", { from, to }));
 }
 
@@ -165,7 +156,7 @@ function updateExpirationTimer() {
 }
 
 function updateCycleCount() {
-  document.getElementById("cycles").textContent = getClock();
+  document.getElementById("cycles").textContent = `${getClock()}`;
 }
 
 function updateGraphFeatures() {
