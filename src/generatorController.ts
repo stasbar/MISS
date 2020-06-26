@@ -10,14 +10,15 @@ import {
   addEdge,
   getNodes,
   getEdges,
-  buildAdjacentList
+  buildAdjacentList,
+  getData,
 } from "./data";
 
-import {
-  State, Node, Edge
-} from "./simulator/fast-data"
+import { State, Node, Edge } from "./simulator/fast-data";
+import { difference, intersection } from "lodash";
+
 async function delay(msec: number) {
-  return new Promise(resolve => setTimeout(resolve, msec * 1000));
+  return new Promise((resolve) => setTimeout(resolve, msec * 1000));
 }
 
 export async function generateRandom(noNodes: number) {
@@ -48,11 +49,14 @@ export async function generateRandom(noNodes: number) {
   buildAdjacentList();
 }
 
-export async function generatePropDup(noNodes: number) {
+export async function generatePropDup(
+  noNodes: number,
+  initNodes: number,
+  initEdges: number,
+  phi: number,
+  preventGrapening: boolean
+) {
   console.log("generate");
-
-  const initNodes = Number($("#initNodes").val());
-  const initEdges = Number($("#initEdges").val());
 
   // Build tree
   for (let i = 0; i < initNodes; i++) {
@@ -94,10 +98,8 @@ export async function generatePropDup(noNodes: number) {
     addEdge(from, to);
   }
 
-  const phi = Number($("#phi").val());
   for (let i: number = initNodes; i < noNodes; i++) {
     await delay(0.001);
-    /* await delayIndex(i); */
     const availableNodes = getNodes().get();
     let pickedHost = Math.round(Math.random() * (availableNodes.length - 1));
 
@@ -128,7 +130,7 @@ export async function generatePropDup(noNodes: number) {
         addedEdges++;
       });
 
-    if (addedEdges === 0 && $("#cbPreventGrape").prop("checked")) {
+    if (addedEdges === 0 && preventGrapening) {
       let randomNeighbour = 0;
       if (Math.random() < 0.5 && outEdges.length > 0) {
         const randomEdge =
@@ -156,6 +158,90 @@ export async function generatePropDup(noNodes: number) {
   }
   buildAdjacentList();
 }
+export async function generateWebOfTrust(
+  noNodes: number,
+  initNodes: number,
+  initEdges: number,
+  phi: number
+) {
+  // Build tree
+  for (let i = 0; i < initNodes; i++) {
+    await delay(0.1);
+    addNode(i, 0);
+    if (i == 0) continue;
+
+    const randomNeighbour = Number(Math.round(Math.random() * (i - 1)));
+    addEdge(i, randomNeighbour);
+  }
+
+  //Fill with random edges
+  for (let i = 0; i < initEdges - initNodes + 1; i++) {
+    await delay(0.1);
+    let from: number;
+    let to: number;
+    let searching: boolean = true;
+    while (searching) {
+      from = Math.floor(Math.random() * (initNodes - 1));
+      to = Math.floor(Math.random() * (initNodes - 1));
+
+      searching = Array.from(getEdges().get()).some(
+        (edge: Edge) =>
+          (edge.from === from && edge.to === to) ||
+          (edge.from === to && edge.to === from)
+      );
+    }
+
+    addEdge(from, to);
+  }
+
+  for (let i: number = initNodes; i < noNodes; i++) {
+    await delay(0.01);
+    let pickedHost = Math.floor(Math.random() * i);
+    const edges = Array.from(getEdges().get());
+    const outEdges = edges.filter((edge: Edge) => edge.from === pickedHost);
+    const inEdges = edges.filter((edge: Edge) => edge.to === pickedHost);
+    const combined = [...outEdges, ...inEdges];
+    const inheritedFriend = Number(
+      combined[Math.round(Math.random() * (combined.length - 1))].id
+    );
+
+    addNode(i, State.HS);
+    addEdge(i, pickedHost);
+    // addEdge(i, inheritedFriend);
+  }
+  buildAdjacentList();
+  getNodes().forEach((node1) => {
+    const allMyFriends = getData().adjacentList[node1.id];
+    allMyFriends.forEach((myFriend: number) => {
+      const hisFriends = getData().adjacentList[myFriend];
+      const possibleNewFriends = difference(hisFriends, [
+        ...allMyFriends,
+        node1.id,
+      ]);
+      possibleNewFriends.forEach((possibleNewFriendIndex: number) => {
+        const allHisFriends = getData().adjacentList[possibleNewFriendIndex];
+        const commonFriends = intersection(allMyFriends, allHisFriends);
+        console.log(
+          `commonFriends ${commonFriends.length} / allMyFriends ${allMyFriends.length} >= ${phi}`
+        );
+        if (
+          commonFriends.length / allHisFriends.length >= phi &&
+          !getEdges()
+            .get()
+            .some(
+              (edge) =>
+                (edge.from === node1.id &&
+                  edge.to === possibleNewFriendIndex) ||
+                (edge.to === node1.id && edge.from === possibleNewFriendIndex)
+            )
+        ) {
+          addEdge(node1.id, possibleNewFriendIndex);
+        }
+      });
+    });
+  });
+  buildAdjacentList();
+}
 
 $("#dump").click(() => {
   const network = getNetwork();
@@ -173,11 +259,21 @@ $("#restore1000").click(() => {
 });
 $("#generate").click(() => {
   clear();
+  const initNodes = Number($("#initNodes").val());
+  const initEdges = Number($("#initEdges").val());
+  const phi = Number($("#phi").val());
   const noNodes = Number($("#noNodes ").val());
   if ($("#propDup").prop("checked")) {
-    generatePropDup(noNodes);
-  } else {
+    console.log("generate probDup");
+    const preventGrape = $("#cbPreventGrape").prop("checked");
+    generatePropDup(noNodes, initNodes, initEdges, phi, preventGrape);
+  }
+  if ($("#webOfTrust").prop("checked")) {
+    console.log("generate webOfTrust");
+    generateWebOfTrust(noNodes, initNodes, initEdges, phi);
+  }
+  if ($("#random").prop("checked")) {
+    console.log("generate random");
     generateRandom(noNodes);
   }
 });
-

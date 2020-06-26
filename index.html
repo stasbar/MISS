@@ -34,6 +34,10 @@
           <div class="form-group col-md-2">
             <legend class="col-form-label">Generation method</legend>
             <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="inlineRadioOptions" id="webOfTrust" value="weboftrust" checked>
+              <label class="form-check-label" for="weboftrust">Web of trust</label>
+            </div>
+            <div class="form-check form-check-inline">
               <input class="form-check-input" type="radio" name="inlineRadioOptions" id="propDup" value="probdup" checked>
               <label class="form-check-label" for="propDup">Propabilistic Duplication</label>
             </div>
@@ -82,7 +86,7 @@
           </div>
           <div class="col-md-3">
             <label for="tau">τ(tau): Time to immunization</label>
-            <input type="number" class="form-control" id="tau" value="200" max="1000" min="1" step="1">
+            <input type="number" class="form-control" id="tau" value="100" max="1000" min="1" step="1">
           </div>
           <div class="col-md-3">
             <label for="zhq">Zhq: Mean time in HQ state</label>
@@ -90,13 +94,13 @@
           </div>
           <div class="col-md-3">
             <label for="zia">Zia: Mean time in IA state</label>
-            <input type="number" class="form-control" id="zia" value="100">
+            <input type="number" class="form-control" id="zia" value="3">
           </div>
         </div>
 
         <div class="form-row form-group">
           <div class="input-group mb-3 col-md-4" >
-            <input type="number" id="publishCount" class="form-control" aria-label="no. publications" aria-describedby="publish" value="50">
+            <input type="number" id="publishCount" class="form-control" aria-label="no. publications" aria-describedby="publish" value="10">
             <div class="input-group-append">
               <button class="btn btn-outline-primary" type="button" id="publish">Publish</button>
             </div>
@@ -144,6 +148,7 @@
       <h6 id="expiration-timer"></h6>
       <h6 id="max-in-degree"></h6>
       <h6 id="max-out-degree"></h6>
+      <canvas id="histogram" width="400" height="200"></canvas>
     </div>
 
     <script src="src/main.ts"></script>
