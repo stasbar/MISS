@@ -135,12 +135,12 @@ export class Environment {
     /*     100}` */
     /* ); */
     if (isExtinction) {
-      process.stdout.write(chalk.green(`${'█'.repeat(Math.ceil(this.clock/10))}`));
+      process.stdout.write(chalk.green(`${'█'.repeat(Math.ceil(this.clock/10))} `));
       this.finished = true;
       this.extinction = true;
       this.epidemic = false;
     } else if (isEpidemic) {
-      process.stdout.write(chalk.red(`${'█'.repeat(Math.ceil(this.clock/10))}`));
+      process.stdout.write(chalk.red(`${'█'.repeat(Math.ceil(this.clock/10))} `));
       this.finished = true;
       this.epidemic = true;
       this.extinction = false;

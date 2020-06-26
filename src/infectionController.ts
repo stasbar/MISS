@@ -18,6 +18,7 @@ import {
   calculateNeighbourRatioFor
 } from "./data";
 import { State } from './simulator/fast-data'
+import { fetchNetwork } from "./network";
 
 async function delay(msec: number) {
   return new Promise(resolve => setTimeout(resolve, msec * 1000));
@@ -136,6 +137,5 @@ $("#spread").click(() => startSpreading());
 $("#reset").click(() => {
   finished = true;
   reset();
+  fetchNetwork()
 });
-/* const data = importNetwork(nodeEdges1000); */
-/* setData(data); */

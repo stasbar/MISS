@@ -39,16 +39,6 @@ groups.add({
 
 groups.add({
   id: 1,
-  content: "Edges",
-  options: {
-    drawPoints: {
-      style: "circle" // square, circle
-    }
-  }
-});
-
-groups.add({
-  id: 2,
   content: "Infected",
   className: "infected",
   options: {
@@ -59,7 +49,7 @@ groups.add({
 });
 
 groups.add({
-  id: 3,
+  id: 2,
   content: "Healthly",
   className: "healthly",
   options: {
@@ -128,16 +118,11 @@ function addDataPoint() {
   });
   dataset.update({
     x: now,
-    y: getEdges().getIds().length,
-    group: 1
-  });
-  dataset.update({
-    x: now,
     y: getNodes()
       .get()
       .filter(node => node.group === State.IA || node.group === State.IR)
       .length,
-    group: 2
+    group: 1
   });
   dataset.update({
     x: now,
@@ -145,7 +130,7 @@ function addDataPoint() {
       .get()
       .filter(node => node.group === State.HS || node.group === State.HQ)
       .length,
-    group: 3
+    group: 2
   });
 
   // remove all data points which are no longer visible

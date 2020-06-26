@@ -63,13 +63,18 @@ $("#cbPhysics").change(() => {
 });
 
 $("#btnFetchNetwork").click(() => {
+  fetchNetwork()
+});
+
+export function fetchNetwork() {
   console.log("fetch network");
 
   data.edges.update(getEdges().get());
   data.nodes.update(getNodes().get());
   network = new vis.Network(networkContainer, data, options);
   network.fit();
-});
+
+}
 
 export function getNetwork() {
   return network;
@@ -89,7 +94,6 @@ addOnNodeChangeListener((event, node) => {
   if (!$("#cbFollowUpdates").prop("checked")) {
     return;
   }
-  console.log("onNodeChange");
   if (event === "add") {
     data.nodes.add(node);
   } else if (event === "remove") {
@@ -103,7 +107,6 @@ addOnEdgeChangeListener((event, edge) => {
   if (!$("#cbFollowUpdates").prop("checked")) {
     return;
   }
-  console.log("onEdgeChange");
   if (event === "add") {
     data.edges.add(edge);
   } else if (event === "remove") {
