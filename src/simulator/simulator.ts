@@ -6,6 +6,7 @@ import { Data } from "./fast-data";
 import fs from "fs";
 
 const argv = yargs.argv;
+console.log({argv})
 
 let data: Data;
 if (argv.in) {
@@ -14,7 +15,7 @@ if (argv.in) {
   data = importNetwork(JSON.parse((networkJson as unknown) as string));
 } else {
   console.log(`Generating new network`);
-  data = generatePropDup(1000, 10, 20, 0.5, false);
+  data = generatePropDup(Number(argv.nodes || 1000), 10, 20, 0.5, false);
 }
 const env = new Environment(data);
 

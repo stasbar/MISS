@@ -1,4 +1,5 @@
-import { Data, Edge, State } from "./fast-data";
+import { Data, State, Edge } from "./fast-data";
+import { intersection, difference } from "lodash";
 
 export function generateRandom(noNodes: number): Data {
   const data = new Data(noNodes);
@@ -50,8 +51,8 @@ export function generatePropDup(
     let to: number;
     let searching: boolean = true;
     while (searching) {
-      from = Math.floor(Math.random() * (initNodes- 1))
-      to = Math.floor(Math.random() * (initNodes- 1))
+      from = Math.floor(Math.random() * (initNodes - 1));
+      to = Math.floor(Math.random() * (initNodes - 1));
 
       searching = Array.from(data.edges.values()).some(
         (edge: Edge) =>
@@ -65,11 +66,9 @@ export function generatePropDup(
 
   for (let i: number = initNodes; i < noNodes; i++) {
     let pickedHost = Math.floor(Math.random() * i);
-    const edges = Array.from(data.edges.values())
+    const edges = Array.from(data.edges.values());
 
-    const outEdges = edges.filter(
-      (edge: Edge) => edge.from === pickedHost
-    );
+    const outEdges = edges.filter((edge: Edge) => edge.from === pickedHost);
     const inEdges = edges.filter((edge: Edge) => edge.to === pickedHost);
     let addedEdges = 0;
     outEdges
@@ -118,6 +117,77 @@ export function generatePropDup(
     data.addNode(i, State.HS);
     data.addEdge(i, pickedHost);
   }
+  data.buildAdjacentList();
+  return data;
+}
+
+export function generateWebOfTrust(
+  noNodes: number,
+  initNodes: number,
+  initEdges: number,
+  phi: number
+): Data {
+  const data = new Data(noNodes);
+  // Build tree
+  for (let i = 0; i < initNodes; i++) {
+    data.addNode(i, 0);
+    if (i == 0) continue;
+
+    const randomNeighbour = Number(Math.round(Math.random() * (i - 1)));
+    data.addEdge(i, randomNeighbour);
+  }
+
+  //Fill with random edges
+  for (let i = 0; i < initEdges - initNodes + 1; i++) {
+    let from: number;
+    let to: number;
+    let searching: boolean = true;
+    while (searching) {
+      from = Math.floor(Math.random() * (initNodes - 1));
+      to = Math.floor(Math.random() * (initNodes - 1));
+
+      searching = Array.from(data.edges.values()).some(
+        (edge: Edge) =>
+          (edge.from === from && edge.to === to) ||
+          (edge.from === to && edge.to === from)
+      );
+    }
+
+    data.addEdge(from, to);
+  }
+
+  for (let i: number = initNodes; i < noNodes; i++) {
+    let pickedHost = Math.floor(Math.random() * i);
+    const edges = Array.from(data.edges.values());
+    const outEdges = edges.filter((edge: Edge) => edge.from === pickedHost);
+    const inEdges = edges.filter((edge: Edge) => edge.to === pickedHost);
+    const combined = [...outEdges, ...inEdges];
+    const inheritedFriend = Number(
+      combined[Math.random() * combined.length].id
+    );
+
+    data.addNode(i, State.HS);
+    data.addEdge(i, pickedHost);
+    data.addEdge(i, inheritedFriend);
+  }
+  data.buildAdjacentList();
+  data.nodes.forEach((node1) => {
+    const allMyFriends = data.adjacentList[node1.id];
+    allMyFriends.forEach((myFriend: number) => {
+      const hisFriends = data.adjacentList[myFriend];
+      const possibleNewFriends = difference(hisFriends, [
+        ...allMyFriends,
+        node1.id,
+      ]);
+      possibleNewFriends.forEach((possibleNewFriendIndex: number) => {
+        const allHisFriends = data.adjacentList[possibleNewFriendIndex];
+        const commonFriends = intersection(allMyFriends, allHisFriends);
+        if (commonFriends.length >= phi) {
+          data.addEdge(node1.id, possibleNewFriendIndex);
+        }
+      });
+    });
+  });
   data.buildAdjacentList();
   return data;
 }
