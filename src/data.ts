@@ -1,11 +1,14 @@
-import vis, { IdType } from "vis-network";
-import { moment } from "vis-timeline";
+import vis, { IdType, DataSet } from "vis-network";
+import { moment, Graph2d } from "vis-timeline";
 import { interval } from "rxjs";
 import { countBy, chain } from "lodash";
-import { State, Node, Edge } from "./simulator/fast-data"
+import { State, Node, Edge } from "./simulator/fast-data";
 import { v4 as uuidv4 } from "uuid";
+import Chart from "chart.js";
 
-interface UINode extends Node { title: number }
+interface UINode extends Node {
+  title: number;
+}
 interface Data {
   nodes: vis.DataSet<UINode, "id">;
   edges: vis.DataSet<Edge, "id">;
@@ -14,15 +17,15 @@ interface Data {
 
 moment.updateLocale("en", {
   relativeTime: {
-    s: "%d seconds"
-  }
+    s: "%d seconds",
+  },
 });
 
 console.log("Evalutated data.ts");
 let data: Data = {
   nodes: new vis.DataSet(),
   edges: new vis.DataSet(),
-  adjacentList: undefined
+  adjacentList: undefined,
 };
 
 let clock = 0;
@@ -38,7 +41,7 @@ var expirationTime: moment.Moment = undefined;
 
 interval(1000).subscribe(updateExpirationTimer);
 interval(1000).subscribe(updateCycleCount);
-interval(1000).subscribe(updateGraphFeatures);
+interval(5000).subscribe(updateGraphFeatures);
 
 const resetListeners: Array<() => any> = [];
 export function registerResetListener(listener: () => any) {
@@ -48,7 +51,7 @@ export function clear() {
   data.nodes.clear();
   data.edges.clear();
   data.adjacentList = undefined;
-  resetListeners.forEach(listener => listener());
+  resetListeners.forEach((listener) => listener());
 }
 
 export function getData(): Data {
@@ -72,12 +75,12 @@ export function setData(newData: Data) {
   clear();
   data = newData;
   buildAdjacentList();
-  onDataSetListeeners.forEach(listener => listener(data));
+  onDataSetListeeners.forEach((listener) => listener(data));
 }
 
 export function buildAdjacentList() {
   const adjacentList = new Array<Array<number>>();
-  getEdges().forEach(edge => {
+  getEdges().forEach((edge) => {
     const fromAdjances = adjacentList[Number(edge.from)] || new Array<number>();
     fromAdjances.push(Number(edge.to));
     adjacentList[Number(edge.from)] = fromAdjances;
@@ -95,7 +98,7 @@ export function calculateNeighbourRatioFor(nodeId: number): number {
   const adjacents = data.adjacentList[nodeId];
   const ratio =
     adjacents.filter(
-      neighbour =>
+      (neighbour) =>
         data.nodes.get(neighbour).group === State.IA ||
         data.nodes.get(neighbour).group === State.IR
     ).length / adjacents.length;
@@ -105,9 +108,11 @@ export function calculateNeighbourRatioFor(nodeId: number): number {
 
 export function reset() {
   clock = 0;
-  const newNodes = data.nodes.getIds().map(id => ({ id: Number(id), group: 0 }));
+  const newNodes = data.nodes
+    .getIds()
+    .map((id) => ({ id: Number(id), group: 0 }));
   data.nodes.update(newNodes);
-  resetListeners.forEach(listener => listener());
+  resetListeners.forEach((listener) => listener());
 }
 
 const onNodeChangeListeners: Array<(name: string, node: any) => any> = [];
@@ -119,14 +124,16 @@ export function addOnNodeChangeListener(
 
 export function addNode(id: number, group: number = 0) {
   data.nodes.add({ id, group, title: id });
-  onNodeChangeListeners.forEach(listener =>
+  onNodeChangeListeners.forEach((listener) =>
     listener("add", { id, group, title: id })
   );
 }
 
 export function updateNode(id: number, group: number) {
   data.nodes.update({ id, group });
-  onNodeChangeListeners.forEach(listener => listener("update", { id, group }));
+  onNodeChangeListeners.forEach((listener) =>
+    listener("update", { id, group })
+  );
 }
 
 const onEdgeChangeListeners: Array<(name: string, edge: any) => any> = [];
@@ -136,12 +143,9 @@ export function addOnEdgeChangeListener(
   onEdgeChangeListeners.push(listener);
 }
 
-export function addEdge(
-  from: number,
-  to: number
-) {
+export function addEdge(from: number, to: number) {
   data.edges.add({ id: uuidv4(), from, to });
-  onEdgeChangeListeners.forEach(listener => listener("add", { from, to }));
+  onEdgeChangeListeners.forEach((listener) => listener("add", { from, to }));
 }
 
 export function isExtinct() {
@@ -158,6 +162,37 @@ function updateExpirationTimer() {
 function updateCycleCount() {
   document.getElementById("cycles").textContent = `${getClock()}`;
 }
+
+const myChart = new Chart("histogram", {
+  type: "bar",
+  data: {
+    labels: ["Degree"],
+    datasets: [
+      {
+        label: "Degree",
+        data: [],
+        backgroundColor: ["rgba(255, 99, 132, 0.2)"],
+        borderColor: ["rgba(255, 99, 132, 1)"],
+      },
+    ],
+  },
+  options: {
+    scales: {
+      yAxes: [
+        {
+          ticks: {
+            beginAtZero: true,
+          },
+        },
+      ],
+      xAxes: [
+        {
+          // type: 'logarithmic',
+        }
+      ]
+    },
+  },
+});
 
 function updateGraphFeatures() {
   (function updateTopInDegree() {
@@ -189,5 +224,34 @@ function updateGraphFeatures() {
         .reverse()
         .map(({ from, count }) => `𝞓(${from}) = ${count}`)
         .join(" | ");
+  })();
+
+
+  (function updateHistogram() {
+    const reversed = data.edges
+      .get()
+      .map((value) => ({ from: value.to, to: value.from }));
+    const froms = countBy([...reversed, ...data.edges.get()], "from");
+    const items = chain(froms)
+      .map((cnt, from) => ({ from, count: cnt }))
+      .sortBy("count")
+      .value();
+    const counts = countBy(items, "count");
+    const grouped = chain(counts)
+      .map((value, degree) => ({ degree, count: value }))
+      // .sortBy("count")
+      // .reverse()
+      .value();
+
+    myChart.data.labels = grouped.map((item) => item.degree);
+    myChart.data.datasets = [
+      {
+        label: "Degree",
+        backgroundColor: "rgba(0, 0, 0, 1)",
+        borderColor: "rgba(255, 99, 132, 1)",
+        data: grouped.map((item) => item.count),
+      },
+    ];
+    myChart.update();
   })();
 }

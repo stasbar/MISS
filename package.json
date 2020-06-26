@@ -11,12 +11,14 @@
     "publish:docs": "npx gh-pages -m 'Updates' -d dist"
   },
   "dependencies": {
+    "@types/chart.js": "^2.9.22",
     "@types/jquery": "^3.3.38",
     "@types/lodash": "^4.14.154",
     "@types/node": "^13.13.9",
     "@types/uuid": "^7.0.4",
     "bootstrap": "^4.5.0",
     "chalk": "^3.0.0",
+    "chart.js": "^2.9.3",
     "jquery": "^3.5.1",
     "lodash": "^4.17.15",
     "popper.js": "^1.16.1",
@@ -35,7 +37,7 @@
     "gh-pages": "^3.0.0",
     "parcel-bundler": "^1.12.4",
     "ts-node": "^8.10.2",
-    "typescript": "^3.9.3"
+    "typescript": "^3.9.5"
   },
   "keywords": []
 }
