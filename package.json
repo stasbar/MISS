@@ -8,7 +8,7 @@
     "simulate": "ts-node ./src/simulator/simulator.ts",
     "simulate-1000": "ts-node ./src/simulator/simulator.ts --in=./src/probdup/nodeEdge1000.json --iterations=1000 --all",
     "build": "parcel build index.html",
-    "publish:docs": "npx gh-pages -m 'Updates' -d dist"
+    "deploy": "npm run build && npx gh-pages -m 'Updates' -d dist"
   },
   "dependencies": {
     "@types/chart.js": "^2.9.22",
