@@ -5,7 +5,8 @@ interface NodeEdge {
   x: number;
   y: number;
   id: string;
-  connections: Array<IdType | { fromId: IdType; toId: IdType }>;
+  connections: Array<IdType>;
+  group: number | undefined;
 }
 
 interface ImportedNode {
@@ -17,7 +18,7 @@ interface ImportedNode {
 }
 
 function objectToArray(obj: { [nodeId: string]: Position }) {
-  return Object.keys(obj).map(key => {
+  return Object.keys(obj).map((key) => {
     obj[key]["id"] = key;
     return obj[key];
   });
@@ -25,10 +26,11 @@ function objectToArray(obj: { [nodeId: string]: Position }) {
 
 export function exportNetwork(network: vis.Network) {
   function addConnections(elem: NodeEdge, index: number) {
-    elem.connections = network.getConnectedNodes(index);
+    elem.connections = network.getConnectedNodes(index) as Array<IdType>;
   }
 
   const nodes: vis.Node[] = objectToArray(network.getPositions());
+  //@ts-ignore
   nodes.forEach(addConnections);
 
   const exportValue = JSON.stringify(nodes, undefined, 2);
@@ -36,36 +38,36 @@ export function exportNetwork(network: vis.Network) {
 }
 
 export function importNetwork(inputData: NodeEdge[]): Data {
-  console.log("restore");
+  console.log("restored", inputData);
   /* var inputData: NodeEdge[] = JSON.parse(inputValue); */
   const data = new Data(getNodeData(inputData), getEdgeData(inputData));
-  data.buildAdjacentList()
-  return data
+  data.buildAdjacentList();
+  return data;
 }
 
 function getNodeData(data: NodeEdge[]): Array<ImportedNode> {
   var networkNodes = new Array<ImportedNode>();
 
-  data.forEach(elem => {
+  data.forEach((elem) => {
     networkNodes.push({
       id: Number(elem.id),
       title: elem.id,
       x: elem.x,
       y: elem.y,
-      group: 0
+      group: elem.group || 0,
     });
   });
-  console.log(`restored ${networkNodes.length} nodes`)
+  console.log(`restored ${networkNodes.length} nodes`);
 
   return networkNodes;
 }
 
-function getEdgeData(data: NodeEdge[]) {
+function getEdgeData(data: NodeEdge[]): Map<string, Edge> {
   var networkEdges: Map<string, Edge> = new Map<string, Edge>();
 
   data.forEach((node: NodeEdge) => {
     // add the connection
-    node.connections.forEach(connId => {
+    node.connections.forEach((connId: string | number) => {
       const id = uuidv4();
       networkEdges.set(id, { id, from: Number(node.id), to: Number(connId) });
       let cNode = getNodeById(data, connId);
@@ -73,7 +75,7 @@ function getEdgeData(data: NodeEdge[]) {
       var elementConnections = cNode.connections;
 
       // remove the connection from the other node to prevent duplicate connections
-      var duplicateIndex = elementConnections.findIndex(connection => {
+      var duplicateIndex = elementConnections.findIndex((connection) => {
         return connection == node.id; // double equals since id can be numeric or string
       });
 
@@ -83,14 +85,10 @@ function getEdgeData(data: NodeEdge[]) {
     });
   });
 
-  console.log(`restored ${networkEdges.size} edges`)
   return networkEdges;
 }
 
-function getNodeById(
-  data: NodeEdge[],
-  id: IdType | { fromId: IdType; toId: IdType }
-) {
+function getNodeById(data: NodeEdge[], id: IdType) {
   for (var n = 0; n < data.length; n++) {
     if (data[n].id == id) {
       // double equals since id can be numeric or string

@@ -85,7 +85,6 @@ addOnDataSetListener(newData => {
     return;
   }
   data = newData;
-  console.log("onDataSet");
   network = new vis.Network(networkContainer, data, options);
   network.fit();
 });

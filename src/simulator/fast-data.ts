@@ -8,7 +8,7 @@ export enum State {
   // eslint-disable-next-line no-unused-vars
   IR, // Infected Recoverable - when all neighbours are infected
   // eslint-disable-next-line no-unused-vars
-  HQ // Healthly Quarantine - healed, can stay here forever if stayed long enough
+  HQ, // Healthly Quarantine - healed, can stay here forever if stayed long enough
 }
 
 export interface Node {
@@ -36,9 +36,13 @@ export class Data implements DataType {
   constructor(nodes: number | Node[], edges?: Map<string, Edge>) {
     if (typeof nodes === "number") {
       this.nodes = new Array(nodes as number);
-    } else if (nodes instanceof Array) {
+      console.log("created empty nodes");
+    } else if (Array.isArray(nodes)) {
       this.nodes = nodes;
       this.edges = edges;
+      console.log("assigned nodes and edges");
+    } else {
+      throw new Error("unsupported");
     }
   }
 
@@ -50,7 +54,7 @@ export class Data implements DataType {
   }
   addEdge(from: number, to: number) {
     const id = uuidv4();
-    this.edges.set(id,{ id, from, to });
+    this.edges.set(id, { id, from, to });
   }
   buildAdjacentList(directed: boolean = false) {
     const adjacentList = new Array<Array<number>>();

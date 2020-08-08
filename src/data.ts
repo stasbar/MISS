@@ -1,8 +1,8 @@
-import vis, { IdType, DataSet } from "vis-network";
-import { moment, Graph2d } from "vis-timeline";
+import vis from "vis-network";
+import { moment } from "vis-timeline";
 import { interval } from "rxjs";
 import { countBy, chain } from "lodash";
-import { State, Node, Edge } from "./simulator/fast-data";
+import { State, Node, Edge, Data as FastData } from "./simulator/fast-data";
 import { v4 as uuidv4 } from "uuid";
 import Chart from "chart.js";
 
@@ -71,10 +71,16 @@ export function addOnDataSetListener(listener: (data) => any) {
   onDataSetListeeners.push(listener);
 }
 
-export function setData(newData: Data) {
+export function setData(newData: FastData) {
   clear();
-  data = newData;
-  buildAdjacentList();
+  window.adjacentList = newData.adjacentList;
+  data = {
+    //@ts-ignore
+    nodes: new vis.DataSet(newData.nodes),
+    //@ts-ignore
+    edges: new vis.DataSet(Array.from(newData.edges.values())),
+  };
+  buildAdjacentList()
   onDataSetListeeners.forEach((listener) => listener(data));
 }
 
@@ -188,8 +194,8 @@ const myChart = new Chart("histogram", {
       xAxes: [
         {
           // type: 'logarithmic',
-        }
-      ]
+        },
+      ],
     },
   },
 });
@@ -225,7 +231,6 @@ function updateGraphFeatures() {
         .map(({ from, count }) => `𝞓(${from}) = ${count}`)
         .join(" | ");
   })();
-
 
   (function updateHistogram() {
     const reversed = data.edges

@@ -1,5 +1,7 @@
 import nodeEdges1000NoGrape from "./probdup/nodeEdge1000NoGrape.json";
 import nodeEdges1000 from "./probdup/nodeEdge1000.json";
+import webOfTrust1000 from "./probdup/webOfTrust1000.json";
+import grape from "./probdup/grape-cliquie.json";
 
 import { getNetwork } from "./network";
 import { importNetwork, exportNetwork } from "./utils";
@@ -255,6 +257,14 @@ $("#restore1000NoGrape").click(() => {
 
 $("#restore1000").click(() => {
   const data = importNetwork(nodeEdges1000);
+  setData(data);
+});
+$("#restore1000webOfTrust").click(() => {
+  const data = importNetwork(webOfTrust1000);
+  setData(data);
+});
+$("#restoreGrape").click(() => {
+  const data = importNetwork(grape);
   setData(data);
 });
 $("#generate").click(() => {
