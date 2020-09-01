@@ -71,4 +71,18 @@ export class Data implements DataType {
     });
     this.adjacentList = adjacentList;
   }
+  toJSON() {
+    return this.nodes.map((node) => {
+      const connections = [];
+      for (let value of this.edges.values()) {
+        if (value.from === node.id) {
+          connections.push(value.to);
+        }
+      }
+      return {
+        id: String(node.id),
+        connections,
+      };
+    });
+  }
 }

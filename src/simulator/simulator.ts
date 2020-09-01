@@ -1,12 +1,12 @@
 import * as yargs from "yargs";
-import { importNetwork } from "../utils";
+import { importNetwork, exportNetwork } from "../utils";
 import { generatePropDup } from "./fastGenerator";
 import { Environment } from "./environment";
 import { Data } from "./fast-data";
 import fs from "fs";
 
 const argv = yargs.argv;
-console.log({argv})
+console.log({ argv });
 
 let data: Data;
 if (argv.in) {
@@ -16,19 +16,31 @@ if (argv.in) {
 } else {
   console.log(`Generating new network`);
   data = generatePropDup(Number(argv.nodes || 1000), 10, 20, 0.5, false);
+  fs.writeFileSync("lastGeneratedData.json", JSON.stringify(data))
 }
 const env = new Environment(data);
 
-function performTest() {
-  const publications: number = Number(argv.publications || 30);
-  const xi: number = Number(argv.xi || 0.25);
-  const tau: number = Number(argv.tau || 200);
-  const zhq: number = Number(argv.zhq || 1);
-  const zia: number = Number(argv.zia || 100);
-
+export interface Configuration {
+  publications: number;
+  iterations: number;
+  xi: number;
+  zia: number;
+  zhq: number;
+  tau: number;
+}
+export function performTest({
+  publications,
+  iterations,
+  xi,
+  zia,
+  zhq,
+  tau,
+}: Configuration) {
   let extinctions = 0;
+  let extinctionsClockCounter = 0;
   let epidemics = 0;
-  const iterations: number = Number(argv.iterations || 50);
+  let epidemicsClockCounter = 0;
+  let epidemicsAfterPublications = 0;
   console.dir({
     nodes: env.data.nodes.length,
     edges: env.data.edges.size,
@@ -37,36 +49,66 @@ function performTest() {
     tau,
     zhq,
     zia,
-    iterations
+    iterations,
   });
   for (let index = 0; index < iterations; index++) {
     env.reset();
     env.start(publications, xi, tau, zhq, zia);
 
-    if (env.extinction) extinctions++;
-    else if (env.epidemic) epidemics++;
+    if (env.extinction) {
+      extinctions++;
+      extinctionsClockCounter += env.clock;
+    } else if (env.epidemic) {
+      epidemics++;
+      epidemicsClockCounter += env.clock;
+      if (env.clock > publications) {
+        epidemicsAfterPublications++;
+      }
+    }
   }
   console.log(
-    `\nExtinctions/Epidemics ${extinctions}/${epidemics} = ${(extinctions /
-      iterations) *
-      100}/${(epidemics / iterations) * 100}`
+    `\nExtinctions/Epidemics ${extinctions}/${epidemics} = ${
+      (extinctions / iterations) * 100
+    }/${(epidemics / iterations) * 100} average cycles ${
+      extinctions ? extinctionsClockCounter / extinctions : 0
+    } / ${epidemics ? epidemicsClockCounter / epidemics : 0}`
   );
-  return Math.round((extinctions / iterations) * 100);
+  return {
+    epidemicProportion: Math.round((epidemics / iterations) * 100),
+    epidemics,
+    epidemicsAvgCycles: epidemics
+      ? Math.round(epidemicsClockCounter / epidemics)
+      : 0,
+    extinctions,
+    extinctionsAvgCycles: extinctions
+      ? Math.round(extinctionsClockCounter / extinctions)
+      : 0,
+    epidemicsAfterPublications,
+  };
 }
 
-if (!argv.all) {
-  performTest();
-} else {
-  const results = [25, 50, 100, 200, 300, 500].map(zia => {
-    argv.zia = zia;
-    const extinctions = performTest();
-    return { zia, extinctions };
-  });
+const iterations: number = Number(argv.iterations || 50);
+const publications: number = Number(argv.publications || 30);
+const xi: number = Number(argv.xi || 0.25);
+const zia: number = Number(argv.zia || 100);
+const zhq: number = Number(argv.zhq || 1);
+const tau: number = Number(argv.tau || 200);
 
-  const writer = fs.createWriteStream("outputs.csv");
-  results.forEach(({ zia, extinctions }) => {
-    writer.write(`"${zia}","${extinctions}"\n`);
-  });
+const {
+  epidemicProportion,
+  epidemics,
+  extinctions,
+  epidemicsAvgCycles,
+  extinctionsAvgCycles,
+  epidemicsAfterPublications,
+} = performTest({ publications, xi, zia, zhq, tau, iterations });
 
-  writer.close();
+if (argv.save) {
+  fs.appendFile(
+    `outputs/zia${zia}xi${xi}.csv`,
+    `"${publications}","${xi}","${zia}","${zhq}","${tau}","${epidemicProportion}","${epidemics}","${extinctions}","${epidemicsAvgCycles}","${extinctionsAvgCycles}","${epidemicsAfterPublications}"\n`,
+    (error) => {
+      console.error(error);
+    }
+  );
 }
