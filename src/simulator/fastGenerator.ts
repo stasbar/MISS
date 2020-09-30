@@ -158,17 +158,9 @@ export function generateWebOfTrust(
 
   for (let i: number = initNodes; i < noNodes; i++) {
     let pickedHost = Math.floor(Math.random() * i);
-    const edges = Array.from(data.edges.values());
-    const outEdges = edges.filter((edge: Edge) => edge.from === pickedHost);
-    const inEdges = edges.filter((edge: Edge) => edge.to === pickedHost);
-    const combined = [...outEdges, ...inEdges];
-    const inheritedFriend = Number(
-      combined[Math.random() * combined.length].id
-    );
 
     data.addNode(i, State.HS);
     data.addEdge(i, pickedHost);
-    data.addEdge(i, inheritedFriend);
   }
   data.buildAdjacentList();
   data.nodes.forEach((node1) => {
@@ -182,7 +174,7 @@ export function generateWebOfTrust(
       possibleNewFriends.forEach((possibleNewFriendIndex: number) => {
         const allHisFriends = data.adjacentList[possibleNewFriendIndex];
         const commonFriends = intersection(allMyFriends, allHisFriends);
-        if (commonFriends.length >= phi) {
+        if (commonFriends.length / allMyFriends.length >= phi) {
           data.addEdge(node1.id, possibleNewFriendIndex);
         }
       });

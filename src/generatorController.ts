@@ -170,7 +170,7 @@ export async function generateWebOfTrust(
   for (let i = 0; i < initNodes; i++) {
     await delay(0.1);
     addNode(i, 0);
-    if (i == 0) continue;
+    if (i == 0) continue; // there is no neighbour for the first added node
 
     const randomNeighbour = Number(Math.round(Math.random() * (i - 1)));
     addEdge(i, randomNeighbour);
@@ -199,17 +199,9 @@ export async function generateWebOfTrust(
   for (let i: number = initNodes; i < noNodes; i++) {
     await delay(0.01);
     let pickedHost = Math.floor(Math.random() * i);
-    const edges = Array.from(getEdges().get());
-    const outEdges = edges.filter((edge: Edge) => edge.from === pickedHost);
-    const inEdges = edges.filter((edge: Edge) => edge.to === pickedHost);
-    const combined = [...outEdges, ...inEdges];
-    const inheritedFriend = Number(
-      combined[Math.round(Math.random() * (combined.length - 1))].id
-    );
 
     addNode(i, State.HS);
     addEdge(i, pickedHost);
-    // addEdge(i, inheritedFriend);
   }
   buildAdjacentList();
   getNodes().forEach((node1) => {
