@@ -1,0 +1,4 @@
+Subscriber -> ICN Node: Interest Packet (content name)
+ICN Node --> Subscriber: Data Packet (content, signature, publisher pubkey)
+Subscriber -> Blockchain Node: Get Credibility Score (hash(content), publisher pubkey)
+Blockchain Node --> Subscriber: Credibility Score (value)
