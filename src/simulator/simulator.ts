@@ -4,6 +4,7 @@ import { generatePropDup } from "./fastGenerator";
 import { Environment } from "./environment";
 import { Data } from "./fast-data";
 import fs from "fs";
+import { defensiveAlliances } from "./defensiveAlliance";
 
 const argv = yargs.argv;
 console.log({ argv });
@@ -15,8 +16,14 @@ if (argv.in) {
   data = importNetwork(JSON.parse((networkJson as unknown) as string));
 } else {
   console.log(`Generating new network`);
-  data = generatePropDup(Number(argv.nodes || 1000), 10, 20, 0.5, false);
-  fs.writeFileSync("lastGeneratedData.json", JSON.stringify(data))
+  data = generatePropDup(
+    Number(argv.nodes || 1000),
+    Math.min(Number(argv.nodes || 1000), 10),
+    20,
+    0.5,
+    false
+  );
+  fs.writeFileSync("lastGeneratedData.json", JSON.stringify(data));
 }
 const env = new Environment(data);
 
@@ -87,7 +94,7 @@ export function performTest({
   };
 }
 
-const iterations: number = Number(argv.iterations || 50);
+const iterations: number = Number(argv.iterations ?? 50);
 const publications: number = Number(argv.publications || 30);
 const xi: number = Number(argv.xi || 0.25);
 const zia: number = Number(argv.zia || 100);
@@ -111,4 +118,10 @@ if (argv.save) {
       console.error(error);
     }
   );
+}
+
+if (argv.findDefensiveAlliances) {
+  for (let defAliance of defensiveAlliances(data.adjacentList, xi)) {
+    console.log("defensive alliance:", defAliance);
+  }
 }
