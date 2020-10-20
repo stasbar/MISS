@@ -2,7 +2,7 @@ import * as yargs from "yargs";
 import { importNetwork, exportNetwork } from "../utils";
 import { generatePropDup } from "./fastGenerator";
 import { Environment } from "./environment";
-import { Data } from "./fast-data";
+import { Data, State } from "./fast-data";
 import fs from "fs";
 import { defensiveAlliances } from "./defensiveAlliance";
 
@@ -121,7 +121,15 @@ if (argv.save) {
 }
 
 if (argv.findDefensiveAlliances) {
+  const defAlliances: Array<Set<number>> = [];
   for (let defAliance of defensiveAlliances(data.adjacentList, xi)) {
+    defAlliances.push(defAliance);
     console.log("defensive alliance:", defAliance);
   }
+  defAlliances.forEach((alliance) => {
+    alliance.forEach((element) => {
+      data.updateNode(element, State.IA);
+    });
+  });
+  fs.writeFileSync("lastGeneratedData.json", JSON.stringify(data));
 }

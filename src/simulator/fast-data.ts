@@ -81,6 +81,7 @@ export class Data implements DataType {
       }
       return {
         id: String(node.id),
+        group: node.group,
         connections,
       };
     });

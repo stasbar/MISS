@@ -1,33 +1,72 @@
 import _ from "lodash";
+import BronKerbosch from "@seregpie/bron-kerbosch";
 
-export function* defensiveAlliances(adjacentList: number[][], xi: number) {
-  console.log(adjacentList.keys());
-  const nodes = Array.from(adjacentList.keys());
-  console.log(nodes);
-  let counter = 0;
-  for (let subset of subsets(nodes)) {
-    counter++;
-    if (isDefensiveAlliance(subset, adjacentList, xi)) {
-      yield subset;
+export function* suspected(adjacentList: number[][]) {
+  interface INode {
+    index: number;
+    inWeight: number;
+    outWeight: number;
+    outNodes: number[];
+    inNodes: number[];
+    isSuspected: () => boolean;
+  }
+  function Node(index: number, neighbours: number[]): INode {
+    const inNodes = neighbours.filter((neighbour) => neighbour > index);
+    const inWeight = inNodes.length;
+    const outNodes = neighbours.filter((neighbour) => neighbour < index);
+    const outWeight = outNodes.length;
+
+    function isSuspected(): boolean {
+      return inWeight > outWeight;
+    }
+
+    return {
+      index,
+      inWeight,
+      outWeight,
+      outNodes,
+      inNodes,
+      isSuspected,
+    };
+  }
+
+  for (const node of adjacentList.map((neighbours, index) =>
+    Node(index, neighbours)
+  )) {
+    if (node.isSuspected()) {
+      yield new Set([...node.inNodes, node.index]);
     }
   }
-  console.log(`Power set of ${nodes.length} = ${counter}`);
 }
-// Generate all array subsets:
-function* subsets(
-  array: Array<number>,
-  offset: number = 0
+
+export function* defensiveAlliances(
+  adjacentList: number[][],
+  xi: number
 ): Generator<Set<number>> {
-  while (offset < array.length) {
-    let first = array[offset++];
-    for (let subset of subsets(array, offset)) {
-      subset.add(first);
-      if (subset.size > 0 && subset.size < array.length) {
-        yield subset;
-      }
+  for (let suspect of suspected(adjacentList)) {
+    if (isDefensiveAlliance(new Set(suspect), adjacentList, xi)) {
+      yield suspect;
     }
   }
-  yield new Set();
+  const edges = new Set(
+    adjacentList
+      .map((adjacents, index) => {
+        return adjacents
+          .map((value) => [
+            [index, value],
+            [value, index],
+          ])
+          .flatMap((value) => value);
+      })
+      .flatMap((value) => value)
+  );
+
+  const cliques: Array<Set<number>> = BronKerbosch(edges);
+  for (let clique of cliques) {
+    if (isDefensiveAlliance(clique, adjacentList, xi)) {
+      yield clique;
+    }
+  }
 }
 
 function isDefensiveAlliance(
