@@ -125,6 +125,13 @@ if (argv.findDefensiveAlliances) {
   for (let defAliance of defensiveAlliances(data.adjacentList, xi)) {
     defAlliances.push(defAliance);
     console.log("defensive alliance:", defAliance);
+    fs.appendFile(
+      `outputs/defensiveAlliance/xi${xi}nodes${argv.nodes}.csv`,
+      `"${argv.nodes}","${xi}","${zia}"\n`,
+      (error) => {
+        console.error(error);
+      }
+    );
   }
   defAlliances.forEach((alliance) => {
     alliance.forEach((element) => {
