@@ -1,15 +1,16 @@
 import _ from "lodash";
 import BronKerbosch from "@seregpie/bron-kerbosch";
 
+interface INode {
+  index: number;
+  inWeight: number;
+  outWeight: number;
+  outNodes: number[];
+  inNodes: number[];
+  isSuspected: () => boolean;
+}
+
 export function* suspected(adjacentList: number[][]) {
-  interface INode {
-    index: number;
-    inWeight: number;
-    outWeight: number;
-    outNodes: number[];
-    inNodes: number[];
-    isSuspected: () => boolean;
-  }
   function Node(index: number, neighbours: number[]): INode {
     const inNodes = neighbours.filter((neighbour) => neighbour > index);
     const inWeight = inNodes.length;
