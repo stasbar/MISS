@@ -8,6 +8,7 @@
     "allowJs": true,
     "target": "esnext",
     "lib": ["esnext", "dom"],
+    "outDir": "dist",
     "rootDir": "src",
     "moduleResolution": "node"
   },
