@@ -7,18 +7,18 @@ interface INode {
   outWeight: number;
   outNodes: number[];
   inNodes: number[];
-  isSuspected: () => boolean;
+  isSuspected: (xi: number) => boolean;
 }
 
-export function* suspected(adjacentList: number[][]) {
+export function* suspected(adjacentList: number[][], xi: number) {
   function Node(index: number, neighbours: number[]): INode {
     const inNodes = neighbours.filter((neighbour) => neighbour > index);
     const inWeight = inNodes.length;
     const outNodes = neighbours.filter((neighbour) => neighbour < index);
     const outWeight = outNodes.length;
 
-    function isSuspected(): boolean {
-      return inWeight > outWeight;
+    function isSuspected(xi: number): boolean {
+      return inWeight / (inWeight + outWeight) > 1 - xi;
     }
 
     return {
@@ -34,7 +34,7 @@ export function* suspected(adjacentList: number[][]) {
   for (const node of adjacentList.map((neighbours, index) =>
     Node(index, neighbours)
   )) {
-    if (node.isSuspected()) {
+    if (node.isSuspected(xi)) {
       yield new Set([...node.inNodes, node.index]);
     }
   }
@@ -44,7 +44,7 @@ export function* defensiveAlliances(
   adjacentList: number[][],
   xi: number
 ): Generator<Set<number>> {
-  for (let suspect of suspected(adjacentList)) {
+  for (let suspect of suspected(adjacentList, xi)) {
     if (isDefensiveAlliance(new Set(suspect), adjacentList, xi)) {
       yield suspect;
     }

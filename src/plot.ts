@@ -1,62 +1,61 @@
-import vis from "vis-timeline";
-import {
-  getNodes,
-  getEdges,
-  getClock,
-  registerResetListener
-} from "./data";
+import { Graph2d } from "vis-timeline";
+import { DataSet } from "vis-data";
+import { getNodes, getClock, registerResetListener } from "./data";
 import "./plot.css";
-import { State } from "./simulator/fast-data"
+import { State } from "./simulator/fast-data";
 
 var DELAY = 500; // delay in ms to add new data points
 
 // create a graph2d with an (currently empty) dataset
 var container = document.getElementById("visualization");
-var dataset = new vis.DataSet();
-var groups = new vis.DataSet();
+const dataset = new DataSet();
+const groups = new DataSet();
 
 registerResetListener(() => {
   console.log("Called cleanup");
   dataset.clear();
   var now = getClock();
-  var range = graph2d.getWindow();
-  var interval = range.end - range.start;
+  var { end, start } = graph2d.getWindow();
+  var interval = end.getTime() - start.getTime();
   graph2d.setWindow(now - 0.1 * interval, now + 0.9 * interval);
 });
 
 groups.add({
   id: 0,
+  // @ts-ignore
   content: "Nodes",
   options: {
     drawPoints: {
-      style: "square" // square, circle
+      style: "square", // square, circle
     },
     shaded: {
-      orientation: "bottom" // top, bottom
-    }
-  }
+      orientation: "bottom", // top, bottom
+    },
+  },
 });
 
 groups.add({
   id: 1,
+  // @ts-ignore
   content: "Infected",
   className: "infected",
   options: {
     drawPoints: {
-      style: "square" // square, circle
-    }
-  }
+      style: "square", // square, circle
+    },
+  },
 });
 
 groups.add({
   id: 2,
+// @ts-ignore
   content: "Healthly",
   className: "healthly",
   options: {
     drawPoints: {
-      style: "square" // square, circle
-    }
-  }
+      style: "square", // square, circle
+    },
+  },
 });
 
 var options = {
@@ -66,42 +65,25 @@ var options = {
   dataAxis: {
     left: {
       range: {
-        min: -1
-      }
-    }
-  }
+        min: -1,
+      },
+    },
+  },
 };
 
-var graph2d = new vis.Graph2d(container, dataset, groups, options);
+  // @ts-ignore
+var graph2d = new Graph2d(container, dataset, groups, options);
 
 function renderStep() {
   // move the window (you can think of different strategies).
   var now = getClock();
   var range = graph2d.getWindow();
-  var interval = range.end - range.start;
-  const strategy = "static";
-
-  switch (strategy) {
-    case "continuous":
-      // continuously move the window
-      graph2d.setWindow(now - interval, now, { animation: false });
-      requestAnimationFrame(renderStep);
-      break;
-
-    case "discrete":
-      graph2d.setWindow(now - interval, now, { animation: false });
-      setTimeout(renderStep, DELAY);
-      break;
-
-    default:
-      // 'static'
-      // move the window 90% to the left when now is larger than the end of the window
-      if (now > range.end) {
-        graph2d.setWindow(now - 0.1 * interval, now + 0.9 * interval);
-      }
-      setTimeout(renderStep, DELAY);
-      break;
+  var interval = range.end.getTime() - range.start.getTime();
+  // move the window 90% to the left when now is larger than the end of the window
+  if (now > range.end.getTime()) {
+    graph2d.setWindow(now - 0.1 * interval, now + 0.9 * interval);
   }
+  setTimeout(renderStep, DELAY);
 }
 renderStep();
 
@@ -112,34 +94,38 @@ function addDataPoint() {
   // add a new data point to the dataset
   var now = getClock();
   dataset.update({
+  // @ts-ignore
     x: now,
     y: getNodes().getIds().length,
-    group: 0
+    group: 0,
   });
   dataset.update({
+  // @ts-ignore
     x: now,
     y: getNodes()
       .get()
-      .filter(node => node.group === State.IA || node.group === State.IR)
+      .filter((node) => node.group === State.IA || node.group === State.IR)
       .length,
-    group: 1
+    group: 1,
   });
   dataset.update({
+  // @ts-ignore
     x: now,
     y: getNodes()
       .get()
-      .filter(node => node.group === State.HS || node.group === State.HQ)
+      .filter((node) => node.group === State.HS || node.group === State.HQ)
       .length,
-    group: 2
+    group: 2,
   });
 
   // remove all data points which are no longer visible
   var range = graph2d.getWindow();
-  var interval = range.end - range.start;
+  var interval = range.end.getTime() - range.start.getTime();
   var oldIds = dataset.getIds({
-    filter: function(item) {
-      return item.x < range.start - interval;
-    }
+    filter: function (item) {
+      // @ts-ignore
+      return item.x < range.start.getTime() - interval;
+    },
   });
   dataset.remove(oldIds);
 

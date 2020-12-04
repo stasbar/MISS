@@ -1,4 +1,5 @@
-import vis from "vis-network";
+import { DataSet } from "vis-data";
+import { Network } from "vis-network";
 import {
   registerResetListener as onReset,
   addOnNodeChangeListener,
@@ -9,8 +10,8 @@ import {
 } from "./data";
 
 var data = {
-  nodes: new vis.DataSet(),
-  edges: new vis.DataSet()
+  nodes: new DataSet(),
+  edges: new DataSet()
 };
 
 // create a network
@@ -55,7 +56,8 @@ var options = {
 };
 
 const networkContainer = document.getElementById("network");
-let network = new vis.Network(networkContainer, data, options);
+  // @ts-ignore
+let network = new Network(networkContainer, data, options);
 
 $("#cbPhysics").change(() => {
   const physics = $("#cbPhysics").prop("checked");
@@ -71,7 +73,8 @@ export function fetchNetwork() {
 
   data.edges.update(getEdges().get());
   data.nodes.update(getNodes().get());
-  network = new vis.Network(networkContainer, data, options);
+  // @ts-ignore
+  network = new Network(networkContainer, data, options);
   network.fit();
 
 }
@@ -85,7 +88,8 @@ addOnDataSetListener(newData => {
     return;
   }
   data = newData;
-  network = new vis.Network(networkContainer, data, options);
+  // @ts-ignore
+  network = new Network(networkContainer, data, options);
   network.fit();
 });
 

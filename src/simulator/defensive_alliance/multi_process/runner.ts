@@ -1,11 +1,15 @@
 import concurrently from "concurrently";
 
-const commands = [300, 500, 1000, 2000, 3000]
+const nodes = [100, 300, 1000];
+const xis = [0.2, 0.3];
+const samples = [...Array(100)];
+
+const commands = nodes
   .map((nodes) => {
-    return [0.35, 0.4, 0.5].map((xi) => {
-      return [...Array(100)].map(() => {
+    return xis.map((xi) => {
+      return samples.map(() => {
         return {
-          command: `npm run simulate -- --findDefensiveAlliances --xi=${xi} --nodes=${nodes} --publications=0 --iterations=0`,
+          command: `ts-node src/simulator/defensive_alliance/multi_process/cli.ts -- --xi=${xi} --nodes=${nodes}`,
           name: `[${nodes}][${xi}]`,
         };
       });

@@ -4,17 +4,8 @@ import "popper.js";
 import "bootstrap";
 import "bootstrap/dist/css/bootstrap.css"; // Import precompiled Bootstrap css
 import "@fortawesome/fontawesome-free/css/all.css";
-import lastGeneratedGraph from "../lastGeneratedData.json";
+const lastGeneratedGraph = require("../lastGeneratedData.json");
 import vis from "vis-network";
-import {
-  registerResetListener as onReset,
-  addOnNodeChangeListener,
-  addOnEdgeChangeListener,
-  addOnDataSetListener,
-  getNodes,
-  getEdges,
-  setData,
-} from "./data";
 import { importNetwork } from "./utils";
 
 var data = {
@@ -74,5 +65,6 @@ data = {
   edges: new vis.DataSet(Array.from(newData.edges.values())),
 };
 
+// @ts-ignore
 let network = new vis.Network(networkContainer, data, options);
 network.fit()

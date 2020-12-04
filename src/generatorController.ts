@@ -243,19 +243,23 @@ $("#dump").click(() => {
 });
 
 $("#restore1000NoGrape").click(() => {
+  // @ts-ignore
   const data = importNetwork(nodeEdges1000NoGrape);
   setData(data);
 });
 
 $("#restore1000").click(() => {
+  // @ts-ignore
   const data = importNetwork(nodeEdges1000);
   setData(data);
 });
 $("#restore1000webOfTrust").click(() => {
+  // @ts-ignore
   const data = importNetwork(webOfTrust1000);
   setData(data);
 });
 $("#restoreGrape").click(() => {
+  // @ts-ignore
   const data = importNetwork(grape);
   setData(data);
 });

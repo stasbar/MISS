@@ -1,5 +1,5 @@
-import vis from "vis-network";
-import { moment } from "vis-timeline";
+import { DataSet } from "vis-data";
+import moment from "moment";
 import { interval } from "rxjs";
 import { countBy, chain } from "lodash";
 import { State, Node, Edge, Data as FastData } from "./simulator/fast-data";
@@ -10,8 +10,8 @@ interface UINode extends Node {
   title: number;
 }
 interface Data {
-  nodes: vis.DataSet<UINode, "id">;
-  edges: vis.DataSet<Edge, "id">;
+  nodes: DataSet<UINode, "id">;
+  edges: DataSet<Edge, "id">;
   adjacentList?: number[][];
 }
 
@@ -23,8 +23,8 @@ moment.updateLocale("en", {
 
 console.log("Evalutated data.ts");
 let data: Data = {
-  nodes: new vis.DataSet(),
-  edges: new vis.DataSet(),
+  nodes: new DataSet(),
+  edges: new DataSet(),
   adjacentList: undefined,
 };
 
@@ -58,11 +58,11 @@ export function getData(): Data {
   return data;
 }
 
-export function getNodes(): vis.DataSet<any, "id"> {
+export function getNodes(): DataSet<any, "id"> {
   return data.nodes;
 }
 
-export function getEdges(): vis.DataSet<any, "id"> {
+export function getEdges(): DataSet<any, "id"> {
   return data.edges;
 }
 
@@ -76,9 +76,9 @@ export function setData(newData: FastData) {
   window.adjacentList = newData.adjacentList;
   data = {
     //@ts-ignore
-    nodes: new vis.DataSet(newData.nodes),
+    nodes: new DataSet(newData.nodes),
     //@ts-ignore
-    edges: new vis.DataSet(Array.from(newData.edges.values())),
+    edges: new DataSet(Array.from(newData.edges.values())),
   };
   buildAdjacentList()
   onDataSetListeeners.forEach((listener) => listener(data));

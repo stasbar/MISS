@@ -6,13 +6,19 @@
   "scripts": {
     "start": "parcel index.html --open",
     "preview": "parcel preview.html --open",
+
     "simulate-whole": "ts-node ./src/simulator/simulator-runner.ts",
-    "defensive-simulate-runner": "ts-node ./src/simulator/defensive-simulator-runner.ts",
-    "simulate": "ts-node ./src/simulator/simulator.ts",
-    "simulate-default": "ts-node ./src/simulator/simulator.ts --in=./src/probdup/nodeEdge1000.json",
-    "simulate-1000": "ts-node ./src/simulator/simulator.ts --in=./src/probdup/nodeEdge1000.json --iterations=1000 --all",
-    "findDefensiveAlliancesInExample": "ts-node ./src/simulator/simulator.ts --in=./defensiveAllianceB.json --iterations=0 --findDefensiveAlliances",
-    "findDefensiveAlliances": "ts-node ./src/simulator/simulator.ts --nodes=1000 --iterations=0 --findDefensiveAlliances",
+
+    "simulate": "ts-node ./src/simulator/cli.ts",
+    "simulate-default": "ts-node ./src/simulator/cli.ts --in=./src/probdup/nodeEdge1000.json",
+    "simulate-1000": "ts-node ./src/simulator/cli.ts --in=./src/probdup/nodeEdge1000.json --iterations=1000 --all",
+
+    "findDefensiveAlliancesInExample": "ts-node ./src/simulator/defensive_alliance/cli.ts --in=./defensiveAllianceB.json",
+    "findDefensiveAlliances": "ts-node ./src/simulator/defensive_alliance/cli.ts --nodes=1000",
+
+    "defensive-simulator": "tsc && node ./dist/simulator/defensive_alliance/multi_threaded/simulator.js",
+    "defensive-simulator-multi-process": "ts-node ./src/simulator/defensive_alliance/cli.ts",
+
     "build": "parcel build index.html",
     "deploy": "npm run build && npx gh-pages -m 'Updates' -d dist"
   },
@@ -31,8 +37,9 @@
     "popper.js": "^1.16.1",
     "rxjs": "^6.5.5",
     "uuid": "^7.0.3",
-    "vis-network": "6.4.6",
-    "vis-timeline": "6.2.10",
+    "vis-data": "^7.1.1",
+    "vis-network": "8.5.4",
+    "vis-timeline": "7.4.2",
     "yargs": "^15.3.1"
   },
   "devDependencies": {

@@ -1,10 +1,9 @@
 import * as yargs from "yargs";
-import { importNetwork, exportNetwork } from "../utils";
+import { importNetwork } from "../utils";
 import { generatePropDup } from "./fastGenerator";
 import { Environment } from "./environment";
-import { Data, State } from "./fast-data";
 import fs from "fs";
-import { defensiveAlliances } from "./defensiveAlliance";
+import { Data } from "./fast-data";
 
 const argv = yargs.argv;
 console.log({ argv });
@@ -120,23 +119,3 @@ if (argv.save) {
   );
 }
 
-if (argv.findDefensiveAlliances) {
-  const defAlliances: Array<Set<number>> = [];
-  for (let defAliance of defensiveAlliances(data.adjacentList, xi)) {
-    defAlliances.push(defAliance);
-    console.log("defensive alliance:", defAliance);
-    fs.appendFile(
-      `outputs/defensiveAlliance/xi${xi}nodes${argv.nodes}.csv`,
-      `"${argv.nodes}","${xi}","${zia}"\n`,
-      (error) => {
-        console.error(error);
-      }
-    );
-  }
-  defAlliances.forEach((alliance) => {
-    alliance.forEach((element) => {
-      data.updateNode(element, State.IA);
-    });
-  });
-  fs.writeFileSync("lastGeneratedData.json", JSON.stringify(data));
-}

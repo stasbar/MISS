@@ -9,7 +9,6 @@
 // How do you measure epidemic ? All IA or IR ?
 
 import {
-  Node,
   updateNode,
   reset,
   getNodes,
@@ -17,7 +16,7 @@ import {
   getClock,
   calculateNeighbourRatioFor
 } from "./data";
-import { State } from './simulator/fast-data'
+import { State, Node } from './simulator/fast-data'
 import { fetchNetwork } from "./network";
 
 async function delay(msec: number) {
