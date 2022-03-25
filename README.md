@@ -1,6 +1,9 @@
-# MASTI
+# Application of blockchain and infection processes in graphs to mitigate content poisoning attacks in information-centric networks
 
-How to prevent infection caused by stolen private key.
+Source code for simulating infection processes in graphs to mitigate content poisoning attacks in ICNs.
+In simpler words "How to prevent content forgery caused by stolen private key?".
+
+This repo is a source code behind my [Master's Thesis](https://www.researchgate.net/publication/344659633_Application_of_blockchain_and_infection_processes_in_graphs_to_mitigate_content_poisoning_attacks_in_information-centric_networks).
 
 ![State machine](images/machine-state.jpg)
 
