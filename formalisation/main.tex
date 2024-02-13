@@ -1,0 +1,100 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{amsmath}
+\title{BC Formalisation}
+\author{stasbar1995 }
+\date{November 2023}
+
+\begin{document}
+
+\maketitle
+
+\paragraph{Messaging}
+
+\begin{itemize}
+    \item $A = \{a_1, \ldots, a_n\}$: set of agents, each can be a message originator (publisher) / recipient.
+    \item $E \subseteq A \times A$: communication network connectivity. \begin{itemize}
+        \item $(a_i, a_j) \in E$: direct communication link from $a_i$ to $a_j$.
+        \item $A_i^{+} = \{a_j \in A | (a_i, a_j) \in E\}$: set of agents from which messages can be directly received at $a_i$.
+    \end{itemize}
+    
+    
+    \item $m = \langle p_m, f_m \rangle \in M$: message, where \begin{itemize} 
+        \item $M$ is the set of all messages originating throughout the system operation.
+        \item $p_m \in A$: publisher of $m$.
+        \item $f_m \in \{0, 1\}$: where \begin{itemize}  
+            \item \[
+            f^m = \left\{
+            \begin{array}{ll}
+                  0, & m\textrm{ is a legitimate message originated at} p^m \\
+                  1, & m\textrm{ is a fake message originated elsewhere upon private key theft from} p^m
+            \end{array} 
+            \right.
+            \]
+            \item an attribute $f^m=0$ is not known to any agent.
+        \end{itemize}
+    \end{itemize}
+    \item \( A_i^m \subseteq A_i^-\) is the set of agents from which \( m \) was directly received at \(a_i\).
+    \item \( BC \) blockchain infrastructure to distribute and maintain order consensus on successive instants of proof of time for all \( m \in M \) posted by \( p^m\)
+    \item instance of proof of time for \(m=<\dots{} format \dots{}>\)    
+\end{itemize}
+
+\paragraph{Characteristics of \( a_i \)}
+
+\begin{itemize}
+    \item \( \lambda_i = \Pr(p^m = a_i) \): relative message origination rate.
+    \item \( \Theta_i = \Pr(f^m = 1 | p^m = a_i) \): vulnerability of \( a_i \) to private key theft.
+    \item \( \Phi_i(v) = \Pr(V_i < v) \forall v \leq 0\): distribution function of random variable \( V_i \) representing the duration of validity of a private key stolen from \( a_i \) (until key expired or theft detected).
+\end{itemize}
+
+
+
+\paragraph{Eventual Decision on \( m \) at \( a_i \)}
+
+\begin{itemize}
+    \item Decision \( d_i^m \) at \( a_i \):
+    \begin{itemize}
+        \item \underline{Accept}: pass from message buffer to local user and broadcast to all \( a_j \in A_i^+ \setminus A_i^m \).
+        \item \underline{Reject}: delete from message buffer.
+    \end{itemize}
+    \item \( \xi_i^m \) elapsed time from the first reception of \( m \) till the decision \( d_i^m = \) \underline{accept} is taken (if \( d_i^m = \) \underline{reject}, then \( \xi_i^m \) is meaningless).
+\end{itemize}
+
+\paragraph{Decision Rule on \( m \) at \( a_i \)}
+
+\begin{itemize}
+    \item Rule input:
+    \item \begin{itemize}
+        \item \( A_i^m \subseteq A_i^- \), The set of agents from which $m$ was directly received at $a_i$.
+        \item \( \textbf{t}^m = \{ t_1^m, \ldots, t_k^m \} \in T \): instants, relative to the first reception of \( m \), at which \( p^m \) posted on BC successive instances of proof of time for \( m \).
+        \item \( \textbf{d}^m = \{ d^m_1, \ldots, d^m_l \} \in D \): eventual decisions at \( a_i \) on previously received messages \( m_1, \ldots, m_l \).
+    \end{itemize}
+
+
+    \item Rule representation: 
+    \item \begin{itemize}
+    \( \textbf{R} = \langle R_{\text{\underline{accept}}}, R_{\text{\underline{reject}}} \rangle \), where \( R_{\text{\underline{accept}}} [R_{\text{\underline{reject}}}] \subseteq A_i^- \times T \times D \) is the subspace of rule input implying \underline{accept} [\underline{reject}].
+    
+    \end{itemize}
+\end{itemize}
+
+\paragraph{Objective}
+
+Find \( R \), common to all \( a_i \in A \), satisfying:
+\begin{itemize}
+    \item Legitimate message reachability postulate: maximize \[
+    \sum_{m \in M : f_m = 0}|\{a_i \in A : d_i^m = \text{\underline{accept}\}}|
+    \]
+    \item Resistance to fake messages postulate: maximize \[
+    \sum_{m \in M : f_m = 1}|\{a_i \in A : d_i^m = \text{\underline{reject}\}}|
+    \]
+    \item Responsiveness postulate: minimize 
+    \[
+    \sum_{m \in M : f_m = 0} \sum_{i : a_i \in A \and d_i^m = \text{\underline{accept}}} \xi_i^m 
+    \]
+    
+\end{itemize}
+
+
+
+\end{document}
