@@ -3,126 +3,115 @@ from gymnasium import spaces
 import numpy as np
 import random
 
-class AcknowledgeEnv(gym.Env):
+MAX_ACKNOWLEDGE_COUNT = 16
+THEFT_MAX_ACKNOWLEDGE_COUNT = 4
+STEPS_PER_EPISODE = 64
+MAX_NEIGHBOURS = 10
+
+class MultiAgentCommunicatingEnv(gym.Env):
     metadata = {'render.modes': ['console']}
 
-    def __init__(self):
-        super(AcknowledgeEnv, self).__init__()
-        self.action_space = spaces.Discrete(3)  # 0: Accept, 1: Reject, 2: Suspend
-        self.observation_space = spaces.Tuple((
-            spaces.Discrete(100),  # Acknowledge count
-            spaces.Discrete(100),  # Current step
-            spaces.Discrete(3)     # Last action taken by the other agent (0, 1, 2)
-        ))
-
-        self.MAX_ACKNOWLEDGE_COUNT = 10
-        self.AVERAGE_THEFT_MAX_ACKNOWLEDGE_COUNT = 3  # Average for the Poisson distribution
-        self.is_legit = True
-        self.acknowledge_count = 0
-        self.current_step = 0
-        self.last_action_other = 2  # Initialize with 'Suspend' as a neutral action
-
+    def __init__(self, num_agents=5):
+        super().__init__()
+        self.num_agents = num_agents
+        self.action_space = spaces.Discrete(3)
+        self.observation_space = spaces.Tuple([
+            spaces.Discrete(MAX_ACKNOWLEDGE_COUNT),
+            spaces.Discrete(STEPS_PER_EPISODE),
+            spaces.Discrete(MAX_NEIGHBOURS),
+            spaces.Discrete(MAX_NEIGHBOURS),
+            spaces.Discrete(MAX_NEIGHBOURS)
+        ])
+        self.reset()
 
     def reset(self):
-        self.is_legit = random.random() > 0.5
         self.acknowledge_count = 0
-        self.current_step = -1
-        self.last_action_other = 2  # Reset to neutral action
-        # Sample a new threshold for this episode if the news is not legit
-        if not self.is_legit:
-            self.THEFT_MAX_ACKNOWLEDGE_COUNT = np.random.poisson(self.AVERAGE_THEFT_MAX_ACKNOWLEDGE_COUNT)
-        return (self.acknowledge_count, self.current_step, self.last_action_other)
+        self.current_step = 0
+        self.is_legit = random.choice([True, False])
+        self.actions_last = np.full(self.num_agents, 2)
+        return self.calculate_obs()
 
+    def step(self, actions):
+        self.current_step = min(self.current_step + 1, STEPS_PER_EPISODE - 1)
+        self.acknowledge_count = min(self.acknowledge_count + 1, MAX_ACKNOWLEDGE_COUNT if self.is_legit else THEFT_MAX_ACKNOWLEDGE_COUNT)
+        self.actions_last = actions
 
-    def step(self, action, action_other):
-        self.last_action_other = action_other  # Update based on the other agent's action
-        self.current_step += 1
+        rewards = []
+        dones = []
+        for action in actions:
+            if action == 2:
+                rewards.append(-1)  # Suspend penalty
+                dones.append(False)
+            else:
+                correct = (action == 0 and self.is_legit) or (action == 1 and not self.is_legit)
+                rewards.append(10 if correct else -10)
+                dones.append(True)  # Decision made, mark done
 
-        if self.is_legit:
-            self.acknowledge_count += 1
-        else:
-            if self.acknowledge_count < self.THEFT_MAX_ACKNOWLEDGE_COUNT:
-                self.acknowledge_count += 1
+        return self.calculate_obs(), rewards, dones, {}
 
-        if action == 2:  # Suspend
-            reward = -1
-            done = False
-        else:
-            correct_decision = 0 if self.is_legit else 1
-            reward = 10 if action == correct_decision else -10
-            done = True
-
-        return (self.acknowledge_count, self.current_step, self.last_action_other), reward, done, {}
+    def calculate_obs(self):
+        counts = np.bincount(self.actions_last, minlength=3)
+        return (
+            self.acknowledge_count,
+            self.current_step,
+            min(counts[2], MAX_NEIGHBOURS),
+            min(counts[0], MAX_NEIGHBOURS),
+            min(counts[1], MAX_NEIGHBOURS)
+        )
 
     def render(self, mode='console'):
-        if mode != 'console':
-            raise NotImplementedError('Unsupported mode: {}'.format(mode))
-        print(f'State: Acknowledge Count={self.acknowledge_count}, Step={self.current_step}, Legit: {self.is_legit}')
+        print(f"Step: {self.current_step}, Actions: {self.actions_last}, Legit: {self.is_legit}")
 
-DISCOUNT_RATE = 0.95
 LEARNING_RATE = 0.1
-EPSILON = 0.1
+DISCOUNT_RATE = 0.95
 
 class QLearningAgent:
-    def __init__(self, action_space, state_space):
-        # Initialize Q-table with a dimension for each part of the state tuple
-        self.q_table = np.random.rand(state_space[0].n, state_space[1].n, state_space[2].n, action_space.n) * 0.01
+    def __init__(self, action_space):
+        self.q_table = np.random.rand(MAX_ACKNOWLEDGE_COUNT+1, STEPS_PER_EPISODE+1, MAX_NEIGHBOURS+1, MAX_NEIGHBOURS+1, MAX_NEIGHBOURS+1, action_space.n) * 0.01
         self.action_space = action_space
 
-    def choose_action(self, state, epsilon=EPSILON):
-        acknowledge_count, current_step, last_action_other = state
+    def choose_action(self, state, epsilon=0.1):
         if random.uniform(0, 1) < epsilon:
-            return 2 # Suspend
+            return 2 # 'Suspend'
         else:
-            return np.argmax(self.q_table[acknowledge_count, current_step, last_action_other])
+            return np.argmax(self.q_table[state])
 
     def update_q_table(self, state, action, reward, next_state, done):
-        acknowledge_count, current_step, last_action_other = state
-        next_acknowledge_count, next_current_step, next_last_action_other = next_state
-        current_q = self.q_table[acknowledge_count, current_step, last_action_other, action]
-        next_max = np.max(self.q_table[next_acknowledge_count, next_current_step, next_last_action_other]) if not done else 0
-        new_q = (1 - LEARNING_RATE) * current_q + LEARNING_RATE * (reward + DISCOUNT_RATE * next_max)
-        self.q_table[acknowledge_count, current_step, last_action_other, action] = new_q
+        current_q = self.q_table[state + (action,)]
+        next_max = np.max(self.q_table[next_state]) if not done else 0
+        self.q_table[state + (action,)] = (1-LEARNING_RATE) * current_q + LEARNING_RATE * (reward + DISCOUNT_RATE * next_max)
 
 
-# Main Training Loop
-env = AcknowledgeEnv()
-
-# Initialize two agents
-agent1 = QLearningAgent(env.action_space, env.observation_space)
-agent2 = QLearningAgent(env.action_space, env.observation_space)
-
-
-
-# Main Training Loop
+# Initialize the environment and agents
+AGENTS_COUNT = 5
+env = MultiAgentCommunicatingEnv(num_agents=AGENTS_COUNT)
+agents = [QLearningAgent(env.action_space) for _ in range(env.num_agents)]
 EPISODES = 10000
+
 for episode in range(EPISODES):
     state = env.reset()
-    total_reward1 = 0
-    total_reward2 = 0
-    done = False
-    steps = 0
+    total_rewards = [0] * env.num_agents
+    dones = [False] * env.num_agents
+    completed = [False] * env.num_agents  # Track completion status of each agent
 
-    while not done:
-        action1 = agent1.choose_action(state)
-        action2 = agent2.choose_action(state)
+    while not all(dones):
+        actions = [agents[i].choose_action(state) for i in range(env.num_agents)]
+        next_state, rewards, dones, _ = env.step(actions)
 
-        # Environment steps forward based on the actions of both agents
-        next_state1, reward1, done, _ = env.step(action1, action2)
-        next_state2, reward2, done, _ = env.step(action2, action1)
+        for i in range(env.num_agents):
+            if not completed[i]:  # Only update total rewards and Q-table for agents not yet completed
+                agents[i].update_q_table(state, actions[i], rewards[i], next_state, dones[i])
+                total_rewards[i] += rewards[i]
 
-        # Update Q-tables for both agents
-        agent1.update_q_table(state, action1, reward1, next_state1, done)
-        agent2.update_q_table(state, action2, reward2, next_state2, done)
+                # Check if the agent has made a decision that completes their participation
+                if actions[i] in [0, 1]:  # Accept or Reject
+                    completed[i] = True
+                elif dones[i]:
+                    completed[i] = True  # Mark completed if the episode is done for other reasons
 
-        # Update state and rewards
-        state = next_state1  # Both next_state1 and next_state2 should be effectively the same
-        total_reward1 += reward1
-        total_reward2 += reward2
-        steps += 1
-        
+        state = next_state
 
     if episode % 100 == 0:
-        print(f"Episode: {episode}, Total Reward: {total_reward}, Steps Taken: {env.current_step}")
+        print(f"Episode: {episode}, Total Rewards: {total_rewards}")
 
 env.close()
